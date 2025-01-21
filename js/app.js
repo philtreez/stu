@@ -8,7 +8,6 @@ async function setup() {
 
     // AudioContext NICHT sofort erstellen
     context = null;
-
     outputNode = null;
 
     try {
@@ -47,7 +46,10 @@ async function createRNBODevice() {
         device.node.connect(outputNode);
 
         console.log("RNBO-Device erfolgreich erstellt.");
+        
         setupPlayButton();
+        setupSequenceButtons(); // Neue Funktion für die Sequenz-Steuerung
+
     } catch (error) {
         console.error("Fehler beim Erstellen des RNBO-Devices:", error);
     }
@@ -71,6 +73,47 @@ function setupPlayButton() {
     } else {
         console.error("Play-Button oder Device nicht gefunden.");
     }
+}
+
+function setupSequenceButtons() {
+    const sequence = Array(8).fill(0); // Startet mit [0, 0, 0, 0, 0, 0, 0, 0]
+
+    // 8 Buttons als <div> abrufen
+    for (let i = 0; i < 8; i++) {
+        const divButton = document.getElementById(`btn-${i}`);
+        if (divButton) {
+            divButton.style.cursor = "pointer"; // Zeigt an, dass es klickbar ist
+            divButton.addEventListener("click", () => {
+                sequence[i] = sequence[i] === 0 ? 1 : 0;
+                divButton.textContent = sequence[i]; // Zeigt den neuen Zustand an
+            });
+        } else {
+            console.warn(`DIV-Button btn-${i} nicht gefunden`);
+        }
+    }
+
+    // Unsichtbaren "Send Sequence"-Button erzeugen
+    const sendButton = document.createElement("button");
+    sendButton.id = "send-seq";
+    sendButton.style.display = "none"; // Unsichtbar
+    document.body.appendChild(sendButton);
+
+    // Eventlistener für den Send-Button
+    sendButton.addEventListener("click", () => {
+        if (!window.device) {
+            console.error("RNBO-Device nicht geladen.");
+            return;
+        }
+
+        const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", sequence);
+        device.scheduleEvent(event);
+        console.log("Gesendete Sequenz:", sequence);
+    });
+
+    // Optional: Automatisch senden nach 2 Sekunden (zum Testen)
+    setTimeout(() => {
+        document.getElementById("send-seq").click();
+    }, 2000);
 }
 
 async function loadRNBOScript(version) {
