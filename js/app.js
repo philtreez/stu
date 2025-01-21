@@ -127,17 +127,21 @@ function setupPlayButton() {
     }
 }
 
-// 🔹 Funktion zur Aktualisierung der Step-Visualisierung
 function updateStepVisualization(step) {
     for (let i = 0; i < 32; i++) {
         const stepDiv = document.getElementById(`step-${i}`);
         if (stepDiv) {
-            stepDiv.style.opacity = i === step ? "1" : "0"; // Aktiver Step sichtbar, andere unsichtbar
+            if (i === step) {
+                stepDiv.classList.add("active"); // Aktivieren
+            } else {
+                stepDiv.classList.remove("active"); // Deaktivieren
+            }
         } else {
             console.warn(`⚠️ Div 'step-${i}' nicht gefunden!`);
         }
     }
 }
+
 
 // 🔹 Step-Tracking für den "step"-Parameter
 function trackStepParameter() {
