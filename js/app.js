@@ -153,6 +153,14 @@ const sliders = [
     { id: "rotary14", parameter: "rotary14" },
     { id: "rotary15", parameter: "rotary15" },
     { id: "rotary16", parameter: "rotary16" },
+    { id: "rotary17", parameter: "rotary17" },
+    { id: "rotary18", parameter: "rotary18" },
+    { id: "rotary19", parameter: "rotary19" },
+    { id: "rotary20", parameter: "rotary20" },
+    { id: "rotary21", parameter: "rotary21" },
+    { id: "rotary22", parameter: "rotary22" },
+    { id: "rotary23", parameter: "rotary23" },
+    { id: "rotary24", parameter: "rotary24" },
 ];
 
 const totalFrames = 50; // Anzahl der Frames im PNG-Strip
@@ -192,7 +200,7 @@ sliders.forEach((slider) => {
 
         // Kombinierte Bewegung in beide Richtungen
         const deltaCombined = (deltaX + deltaY) / 2; // Gewichtung 50/50
-        const stepChange = deltaCombined / 50; // Empfindlichkeit (größer = langsamer)
+        const stepChange = deltaCombined / 70; // Empfindlichkeit (größer = langsamer)
 
         currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1); // Begrenzen auf 0–1
 
