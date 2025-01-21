@@ -127,9 +127,13 @@ function setupPlayButton() {
     }
 }
 
+
+
+
 let isDragging = false;
+let startX = 0;
 let startY = 0;
-let currentFrame = 0; // Aktueller Frame (0–49)
+let currentValue = 0; // Wert des Parameters (0–1)
 const totalFrames = 50; // Anzahl der Frames im PNG-Strip
 const sliderHeight = 200; // Höhe eines Frames in px
 const rotarySlider = document.getElementById("rotary-slider");
@@ -145,26 +149,33 @@ if (rotarySlider) {
     // Maus-Interaktionen
     rotarySlider.addEventListener("mousedown", (event) => {
         isDragging = true;
+        startX = event.clientX;
         startY = event.clientY;
     });
 
     window.addEventListener("mousemove", (event) => {
         if (!isDragging) return;
 
-        const deltaY = event.clientY - startY; // Bewegung der Maus
-        const frameChange = Math.floor(deltaY / 10); // Empfindlichkeit anpassen
-        currentFrame = Math.min(
-            Math.max(currentFrame + frameChange, 0),
-            totalFrames - 1
-        ); // Begrenzen auf 0–49
-        startY = event.clientY; // Startposition aktualisieren
+        const deltaX = event.clientX - startX; // Horizontal
+        const deltaY = startY - event.clientY; // Vertikal (umgekehrte Richtung)
 
-        // Hintergrundposition aktualisieren
+        // Kombinierte Bewegung in beide Richtungen
+        const deltaCombined = (deltaX + deltaY) / 2; // Gewichtung 50/50
+        const stepChange = deltaCombined / 20; // Empfindlichkeit (größer = langsamer)
+
+        currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1); // Begrenzen auf 0–1
+
+        // Hintergrundposition im PNG-Strip aktualisieren
+        const currentFrame = Math.floor(currentValue * (totalFrames - 1)); // Wert in Frame umrechnen
         const frameOffset = currentFrame * sliderHeight;
         rotarySlider.style.backgroundPositionY = `-${frameOffset}px`;
 
         // RNBO-Parameter aktualisieren
-        updateRNBOParameter(currentFrame / (totalFrames - 1)); // Normalisiert zwischen 0–1
+        updateRNBOParameter(currentValue);
+
+        // Startposition aktualisieren
+        startX = event.clientX;
+        startY = event.clientY;
     });
 
     window.addEventListener("mouseup", () => {
@@ -181,7 +192,7 @@ function updateRNBOParameter(value) {
     const rotaryParam = device.parametersById.get("rotary"); // Ersetze 'rotary' mit deinem Parameter-Namen
     if (rotaryParam) {
         rotaryParam.value = value;
-        console.log(`🎛️ Rotary-Wert auf ${value} gesetzt.`);
+        console.log(`🎛️ Rotary-Wert auf ${value.toFixed(2)} gesetzt.`);
     } else {
         console.error("❌ Parameter 'rotary' nicht gefunden.");
     }
