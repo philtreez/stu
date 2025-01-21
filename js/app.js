@@ -97,12 +97,12 @@ function setupSequenceButtons() {
 }
 
 function sendSequenceToRNBO() {
-    if (!window.device) {
-        console.error("RNBO-Device nicht geladen.");
+    if (!device) {
+        console.error("❌ RNBO-Device ist noch nicht geladen. Warte 1 Sekunde und versuche erneut...");
+        setTimeout(sendSequenceToRNBO, 1000); // Erneuter Versuch nach 1 Sekunde
         return;
     }
 
-    // Sicherstellen, dass die Liste IMMER 8 Werte hat
     if (sequence.length !== 8) {
         console.error("❌ Fehler: Die Sequenz hat nicht genau 8 Werte!", sequence);
         return;
@@ -113,6 +113,7 @@ function sendSequenceToRNBO() {
     device.scheduleEvent(event);
     console.log("📡 Gesendete Sequenz an RNBO:", formattedSequence);
 }
+
 
 function setupRNBOEventListener() {
     if (!device) {
