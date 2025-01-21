@@ -138,7 +138,7 @@ if (rotarySlider) {
     // Slider-Styles setzen
     rotarySlider.style.width = "200px";
     rotarySlider.style.height = `${sliderHeight}px`;
-    rotarySlider.style.backgroundImage = "url('path/to/your/strip.png')"; // Pfad zum PNG-Strip
+    rotarySlider.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')"; // Pfad zum PNG-Strip
     rotarySlider.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
     rotarySlider.style.backgroundPositionY = "0px";
 
