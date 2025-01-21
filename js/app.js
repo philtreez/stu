@@ -49,6 +49,7 @@ async function createRNBODevice() {
         
         setupPlayButton();
         setupSequenceButtons(); // Neue Funktion für die Sequenz-Steuerung
+        setupRNBOEventListener(); // RNBO-Event Debugging
 
     } catch (error) {
         console.error("Fehler beim Erstellen des RNBO-Devices:", error);
@@ -94,8 +95,6 @@ function setupSequenceButtons() {
         }
     }
 
-
-
     // Unsichtbaren "Send Sequence"-Button erzeugen
     const sendButton = document.createElement("button");
     sendButton.id = "send-seq";
@@ -109,7 +108,8 @@ function setupSequenceButtons() {
             return;
         }
 
-        const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", sequence);
+        // Wichtig: Float32Array, damit RNBO die Liste erkennt
+        const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", new Float32Array(sequence));
         device.scheduleEvent(event);
         console.log("Gesendete Sequenz:", sequence);
     });
@@ -118,6 +118,18 @@ function setupSequenceButtons() {
     setTimeout(() => {
         document.getElementById("send-seq").click();
     }, 2000);
+}
+
+// Funktion, um alle RNBO-Ausgaben zu loggen
+function setupRNBOEventListener() {
+    if (!device) {
+        console.error("RNBO-Device nicht geladen, keine Events abonniert.");
+        return;
+    }
+
+    device.messageEvent.subscribe((ev) => {
+        console.log(`📡 Empfangenes RNBO-Event: ${ev.tag}: ${ev.payload}`);
+    });
 }
 
 async function loadRNBOScript(version) {
