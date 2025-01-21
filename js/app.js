@@ -55,6 +55,7 @@ async function createRNBODevice() {
         console.log("🔍 RNBO Messages:", device.messages);
 
         setupSequenceButtons();
+        setupPlayButton(); // Play-Button erst hier initialisieren!
         setupRNBOEventListener();
 
     } catch (error) {
@@ -103,17 +104,27 @@ function sendSequenceToRNBO(seq) {
     console.log(`📡 Gesendete Sequenz an RNBO (${seq}):`, formattedSequence);
 }
 
-    // ------ play-Button Steuerung ------
+// ------ play-Button Steuerung ------
+function setupPlayButton() {
     const playButton = document.getElementById("play");
+
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. Play-Button kann nicht gesetzt werden.");
+        return;
+    }
+
     const playParam = device.parametersById.get("play");
 
     if (playButton && playParam) {
         playButton.addEventListener("click", () => {
             const newValue = playParam.value === 0 ? 1 : 0;
             playParam.value = newValue;
-            console.log(`play state set to: ${newValue}`);
+            console.log(`🎛️ Play state set to: ${newValue}`);
         });
+    } else {
+        console.error("❌ Play-Button oder Parameter nicht gefunden.");
     }
+}
 
 // 🔹 Funktion zur Aktualisierung der Step-Visualisierung
 function updateStepVisualization(step) {
