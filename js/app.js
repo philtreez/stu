@@ -1,7 +1,14 @@
 let device;
 let context;
 let outputNode;
-let sequence = Array(8).fill(0); // Immer eine Liste mit 8 Werten
+
+// 4 Sequenzen mit je 32 Steps
+let sequences = {
+    seq1: Array(32).fill(0),
+    seq2: Array(32).fill(0),
+    seq3: Array(32).fill(0),
+    seq4: Array(32).fill(0),
+};
 
 async function setup() {
     console.log("Setup wird gestartet...");
@@ -45,84 +52,66 @@ async function createRNBODevice() {
         device.node.connect(outputNode);
 
         console.log("RNBO-Device erfolgreich erstellt.");
-        console.log("🔍 RNBO Messages:", device.messages); // Prüfen, ob seq existiert
+        console.log("🔍 RNBO Messages:", device.messages);
 
-        setupPlayButton();
         setupSequenceButtons();
         setupRNBOEventListener();
-
-        // 📡 Debugging für alle Events aus RNBO (einschließlich debug!)
-        device.messageEvent.subscribe((ev) => {
-            console.log(`📡 Empfangenes RNBO-Event: ${ev.tag}:`, ev.payload);
-        });
 
     } catch (error) {
         console.error("Fehler beim Erstellen des RNBO-Devices:", error);
     }
 }
 
-
-function setupPlayButton() {
-    const playButton = document.getElementById("play");
-
-    if (playButton && device) {
-        const playParam = device.parametersById.get("play");
-
-        if (playParam) {
-            playButton.addEventListener("click", () => {
-                const newValue = playParam.value === 0 ? 1 : 0;
-                playParam.value = newValue;
-                console.log(`play state set to: ${newValue}`);
-            });
-        } else {
-            console.error("Parameter 'play' nicht gefunden.");
-        }
-    } else {
-        console.error("Play-Button oder Device nicht gefunden.");
-    }
-}
-
 function setupSequenceButtons() {
-    for (let i = 0; i < 8; i++) {
-        const divButton = document.getElementById(`btn-${i}`);
-        if (divButton) {
-            divButton.style.cursor = "pointer";
-            divButton.innerText = sequence[i]; // Startwert setzen
+    Object.keys(sequences).forEach((seq, seqIndex) => {
+        for (let i = 0; i < 32; i++) {
+            const divButton = document.getElementById(`btn-${seq}-${i}`);
+            if (divButton) {
+                divButton.style.cursor = "pointer";
+                divButton.innerText = sequences[seq][i]; // Startwert setzen
 
-            divButton.addEventListener("click", () => {
-                sequence[i] = sequence[i] === 0 ? 1 : 0;
-                divButton.innerText = sequence[i];
-                console.log(`Button ${i} geklickt! Neue Sequenz:`, sequence);
-                
-                sendSequenceToRNBO(); // Sofort die neue Liste senden
-            });
-        } else {
-            console.warn(`DIV-Button btn-${i} nicht gefunden`);
+                divButton.addEventListener("click", () => {
+                    sequences[seq][i] = sequences[seq][i] === 0 ? 1 : 0;
+                    divButton.innerText = sequences[seq][i];
+                    console.log(`Button ${seq}-${i} geklickt! Neue Sequenz für ${seq}:`, sequences[seq]);
+
+                    sendSequenceToRNBO(seq);
+                });
+            } else {
+                console.warn(`DIV-Button btn-${seq}-${i} nicht gefunden`);
+            }
         }
-    }
+    });
 }
 
-function sendSequenceToRNBO() {
+function sendSequenceToRNBO(seq) {
     if (!device) {
-        console.error("❌ RNBO-Device ist noch nicht geladen. Warte 1 Sekunde und versuche erneut...");
-        setTimeout(sendSequenceToRNBO, 1000); // Erneuter Versuch nach 1 Sekunde
+        console.error(`❌ RNBO-Device ist noch nicht geladen. Warte 1 Sekunde und versuche erneut für ${seq}...`);
+        setTimeout(() => sendSequenceToRNBO(seq), 1000);
         return;
     }
 
-    if (sequence.length !== 8) {
-        console.error("❌ Fehler: Die Sequenz hat nicht genau 8 Werte!", sequence);
+    if (sequences[seq].length !== 32) {
+        console.error(`❌ Fehler: Die Sequenz ${seq} hat nicht genau 32 Werte!`, sequences[seq]);
         return;
     }
 
-    // Sicherstellen, dass die Werte als reine Zahlen gesendet werden
-    const formattedSequence = sequence.map(Number); // Alternative zu Float32Array
-    const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", formattedSequence);
+    const formattedSequence = sequences[seq].map(Number);
+    const event = new RNBO.MessageEvent(RNBO.TimeNow, seq, formattedSequence);
     device.scheduleEvent(event);
 
-    console.log("📡 Gesendete Sequenz an RNBO:", formattedSequence);
+    console.log(`📡 Gesendete Sequenz an RNBO (${seq}):`, formattedSequence);
 }
 
-
+// 🔹 Funktion zur Aktualisierung der Step-Visualisierung
+function updateStepVisualization(step) {
+    for (let i = 0; i < 32; i++) {
+        const stepDiv = document.getElementById(`step-${i}`);
+        if (stepDiv) {
+            stepDiv.style.opacity = i === step ? "1" : "0"; // Aktiver Step sichtbar, andere unsichtbar
+        }
+    }
+}
 
 function setupRNBOEventListener() {
     if (!device) {
@@ -131,7 +120,12 @@ function setupRNBOEventListener() {
     }
 
     device.messageEvent.subscribe((ev) => {
-        console.log(`📡 Empfangenes RNBO-Event: ${ev.tag}: ${ev.payload}`);
+        console.log(`📡 Empfangenes RNBO-Event: ${ev.tag}:`, ev.payload);
+
+        if (ev.tag === "step") {
+            const stepValue = parseInt(ev.payload, 10);
+            updateStepVisualization(stepValue);
+        }
     });
 }
 
