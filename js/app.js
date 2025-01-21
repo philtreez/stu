@@ -127,6 +127,68 @@ function setupPlayButton() {
     }
 }
 
+let isDragging = false;
+let startY = 0;
+let currentFrame = 0; // Aktueller Frame (0–49)
+const totalFrames = 50; // Anzahl der Frames im PNG-Strip
+const sliderHeight = 200; // Höhe eines Frames in px
+const rotarySlider = document.getElementById("rotary-slider");
+
+if (rotarySlider) {
+    // Slider-Styles setzen
+    rotarySlider.style.width = "200px";
+    rotarySlider.style.height = `${sliderHeight}px`;
+    rotarySlider.style.backgroundImage = "url('path/to/your/strip.png')"; // Pfad zum PNG-Strip
+    rotarySlider.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
+    rotarySlider.style.backgroundPositionY = "0px";
+
+    // Maus-Interaktionen
+    rotarySlider.addEventListener("mousedown", (event) => {
+        isDragging = true;
+        startY = event.clientY;
+    });
+
+    window.addEventListener("mousemove", (event) => {
+        if (!isDragging) return;
+
+        const deltaY = event.clientY - startY; // Bewegung der Maus
+        const frameChange = Math.floor(deltaY / 10); // Empfindlichkeit anpassen
+        currentFrame = Math.min(
+            Math.max(currentFrame + frameChange, 0),
+            totalFrames - 1
+        ); // Begrenzen auf 0–49
+        startY = event.clientY; // Startposition aktualisieren
+
+        // Hintergrundposition aktualisieren
+        const frameOffset = currentFrame * sliderHeight;
+        rotarySlider.style.backgroundPositionY = `-${frameOffset}px`;
+
+        // RNBO-Parameter aktualisieren
+        updateRNBOParameter(currentFrame / (totalFrames - 1)); // Normalisiert zwischen 0–1
+    });
+
+    window.addEventListener("mouseup", () => {
+        isDragging = false;
+    });
+}
+
+function updateRNBOParameter(value) {
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. Parameter kann nicht gesetzt werden.");
+        return;
+    }
+
+    const rotaryParam = device.parametersById.get("rotary"); // Ersetze 'rotary' mit deinem Parameter-Namen
+    if (rotaryParam) {
+        rotaryParam.value = value;
+        console.log(`🎛️ Rotary-Wert auf ${value} gesetzt.`);
+    } else {
+        console.error("❌ Parameter 'rotary' nicht gefunden.");
+    }
+}
+
+
+
 // 🔹 Funktion zur Aktualisierung der Step-Visualisierung
 function updateStepVisualization(step) {
     for (let i = 0; i < 32; i++) {
