@@ -29,6 +29,18 @@ async function setup() {
         document.body.addEventListener("click", () => context.resume());
     }
 
+    // ------ play-Button Steuerung ------
+    const playButton = document.getElementById("play");
+    const playParam = device.parametersById.get("play");
+
+    if (playButton && playParam) {
+        playButton.addEventListener("click", () => {
+            const newValue = playParam.value === 0 ? 1 : 0;
+            playParam.value = newValue;
+            console.log(`play state set to: ${newValue}`);
+        });
+    }
+
     async function loadRNBOScript(version) {
         return new Promise((resolve, reject) => {
             const script = document.createElement("script");
