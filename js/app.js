@@ -46,10 +46,13 @@ async function createRNBODevice() {
         device.node.connect(outputNode);
 
         console.log("RNBO-Device erfolgreich erstellt.");
-        
+
+        // Debugging: Alle RNBO-Inports & Outports ausgeben
+        console.log("🔍 RNBO Messages:", device.messages);
+
         setupPlayButton();
-        setupSequenceButtons(); // Neue Funktion für die Sequenz-Steuerung
-        setupRNBOEventListener(); // RNBO-Event Debugging
+        setupSequenceButtons();
+        setupRNBOEventListener();
 
     } catch (error) {
         console.error("Fehler beim Erstellen des RNBO-Devices:", error);
@@ -108,10 +111,11 @@ function setupSequenceButtons() {
             return;
         }
 
-        // Wichtig: Float32Array, damit RNBO die Liste erkennt
-        const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", new Float32Array(sequence));
+        // WICHTIG: Float32Array oder map(Number) für RNBO-Kompatibilität
+        const formattedSequence = sequence.map(Number);
+        const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", formattedSequence);
         device.scheduleEvent(event);
-        console.log("Gesendete Sequenz:", sequence);
+        console.log("📡 Gesendete Sequenz an RNBO:", formattedSequence);
     });
 
     // Optional: Automatisch senden nach 2 Sekunden (zum Testen)
