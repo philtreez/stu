@@ -1,13 +1,15 @@
-let device; // Device global deklarieren
+let device;
+let context; // Global deklarieren
+let outputNode;
 
 async function setup() {
     console.log("Setup wird gestartet...");
     const patchExportURL = "https://stu-philtreezs-projects.vercel.app/export/patch.export.json";
 
-    const WAContext = window.AudioContext || window.webkitAudioContext;
-    const context = new WAContext();
-    const outputNode = context.createGain();
-    outputNode.connect(context.destination);
+    // AudioContext NICHT sofort erstellen
+    context = null;
+
+    outputNode = null;
 
     try {
         const response = await fetch(patchExportURL);
@@ -18,19 +20,37 @@ async function setup() {
             await loadRNBOScript(patcher.desc.meta.rnboversion);
         }
 
-        device = await RNBO.createDevice({ context, patcher }); // Globales `device` setzen
-        device.node.connect(outputNode);
-
-        console.log("RNBO-Device erfolgreich erstellt.");
-
-        // Play-Button erst nach Initialisierung verbinden
-        setupPlayButton();
+        // RNBO-Gerät erst nach Nutzerinteraktion starten
+        document.body.addEventListener("click", startAudioContext, { once: true });
 
     } catch (error) {
         console.error("Fehler beim Laden oder Erstellen des RNBO-Devices:", error);
     }
+}
 
-    document.body.addEventListener("click", () => context.resume());
+function startAudioContext() {
+    console.log("Benutzerinteraktion erkannt. Starte AudioContext...");
+    const WAContext = window.AudioContext || window.webkitAudioContext;
+    context = new WAContext();
+    outputNode = context.createGain();
+    outputNode.connect(context.destination);
+
+    createRNBODevice();
+}
+
+async function createRNBODevice() {
+    try {
+        const response = await fetch("https://stu-philtreezs-projects.vercel.app/export/patch.export.json");
+        const patcher = await response.json();
+
+        device = await RNBO.createDevice({ context, patcher });
+        device.node.connect(outputNode);
+
+        console.log("RNBO-Device erfolgreich erstellt.");
+        setupPlayButton();
+    } catch (error) {
+        console.error("Fehler beim Erstellen des RNBO-Devices:", error);
+    }
 }
 
 function setupPlayButton() {
