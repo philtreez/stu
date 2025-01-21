@@ -45,16 +45,22 @@ async function createRNBODevice() {
         device.node.connect(outputNode);
 
         console.log("RNBO-Device erfolgreich erstellt.");
-        console.log("🔍 RNBO Messages:", device.messages); // Check ob seq existiert
+        console.log("🔍 RNBO Messages:", device.messages); // Prüfen, ob seq existiert
 
         setupPlayButton();
         setupSequenceButtons();
         setupRNBOEventListener();
 
+        // 📡 Debugging für alle Events aus RNBO (einschließlich debug!)
+        device.messageEvent.subscribe((ev) => {
+            console.log(`📡 Empfangenes RNBO-Event: ${ev.tag}:`, ev.payload);
+        });
+
     } catch (error) {
         console.error("Fehler beim Erstellen des RNBO-Devices:", error);
     }
 }
+
 
 function setupPlayButton() {
     const playButton = document.getElementById("play");
