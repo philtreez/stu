@@ -78,19 +78,23 @@ function setupPlayButton() {
 function setupSequenceButtons() {
     const sequence = Array(8).fill(0); // Startet mit [0, 0, 0, 0, 0, 0, 0, 0]
 
-    // 8 Buttons als <div> abrufen
     for (let i = 0; i < 8; i++) {
         const divButton = document.getElementById(`btn-${i}`);
         if (divButton) {
-            divButton.style.cursor = "pointer"; // Zeigt an, dass es klickbar ist
+            divButton.style.cursor = "pointer"; // Cursor anzeigen
+            divButton.innerText = "0"; // Setzt den Anfangswert auf "0"
+
             divButton.addEventListener("click", () => {
                 sequence[i] = sequence[i] === 0 ? 1 : 0;
-                divButton.textContent = sequence[i]; // Zeigt den neuen Zustand an
+                divButton.innerText = sequence[i]; // Aktualisiert den Text auf "0" oder "1"
+                console.log(`Button ${i} geklickt! Neuer Wert: ${sequence[i]}`);
             });
         } else {
             console.warn(`DIV-Button btn-${i} nicht gefunden`);
         }
     }
+
+
 
     // Unsichtbaren "Send Sequence"-Button erzeugen
     const sendButton = document.createElement("button");
