@@ -161,7 +161,7 @@ if (rotarySlider) {
 
         // Kombinierte Bewegung in beide Richtungen
         const deltaCombined = (deltaX + deltaY) / 2; // Gewichtung 50/50
-        const stepChange = deltaCombined / 20; // Empfindlichkeit (größer = langsamer)
+        const stepChange = deltaCombined / 50; // Empfindlichkeit (größer = langsamer)
 
         currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1); // Begrenzen auf 0–1
 
