@@ -1,5 +1,5 @@
 async function setup() {
-    const patchExportURL = "export/patch.export.json";
+    const patchExportURL = "https://stu-philtreezs-projects.vercel.app/export/patch.export.json";
 
     // Create AudioContext
     const WAContext = window.AudioContext || window.webkitAudioContext;
