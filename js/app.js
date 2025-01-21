@@ -1,12 +1,12 @@
 let device;
-let context; // Global deklarieren
+let context;
 let outputNode;
+let sequence = Array(8).fill(0); // Immer eine Liste mit 8 Werten
 
 async function setup() {
     console.log("Setup wird gestartet...");
     const patchExportURL = "https://stu-philtreezs-projects.vercel.app/export/patch.export.json";
 
-    // AudioContext NICHT sofort erstellen
     context = null;
     outputNode = null;
 
@@ -19,7 +19,6 @@ async function setup() {
             await loadRNBOScript(patcher.desc.meta.rnboversion);
         }
 
-        // RNBO-Gerät erst nach Nutzerinteraktion starten
         document.body.addEventListener("click", startAudioContext, { once: true });
 
     } catch (error) {
@@ -46,9 +45,7 @@ async function createRNBODevice() {
         device.node.connect(outputNode);
 
         console.log("RNBO-Device erfolgreich erstellt.");
-
-        // Debugging: Alle RNBO-Inports & Outports ausgeben
-        console.log("🔍 RNBO Messages:", device.messages);
+        console.log("🔍 RNBO Messages:", device.messages); // Check ob seq existiert
 
         setupPlayButton();
         setupSequenceButtons();
@@ -80,51 +77,43 @@ function setupPlayButton() {
 }
 
 function setupSequenceButtons() {
-    const sequence = Array(8).fill(0); // Startet mit [0, 0, 0, 0, 0, 0, 0, 0]
-
     for (let i = 0; i < 8; i++) {
         const divButton = document.getElementById(`btn-${i}`);
         if (divButton) {
-            divButton.style.cursor = "pointer"; // Cursor anzeigen
-            divButton.innerText = "0"; // Setzt den Anfangswert auf "0"
+            divButton.style.cursor = "pointer";
+            divButton.innerText = sequence[i]; // Startwert setzen
 
             divButton.addEventListener("click", () => {
                 sequence[i] = sequence[i] === 0 ? 1 : 0;
-                divButton.innerText = sequence[i]; // Aktualisiert den Text auf "0" oder "1"
-                console.log(`Button ${i} geklickt! Neuer Wert: ${sequence[i]}`);
+                divButton.innerText = sequence[i];
+                console.log(`Button ${i} geklickt! Neue Sequenz:`, sequence);
+                
+                sendSequenceToRNBO(); // Sofort die neue Liste senden
             });
         } else {
             console.warn(`DIV-Button btn-${i} nicht gefunden`);
         }
     }
-
-    // Unsichtbaren "Send Sequence"-Button erzeugen
-    const sendButton = document.createElement("button");
-    sendButton.id = "send-seq";
-    sendButton.style.display = "none"; // Unsichtbar
-    document.body.appendChild(sendButton);
-
-    // Eventlistener für den Send-Button
-    sendButton.addEventListener("click", () => {
-        if (!window.device) {
-            console.error("RNBO-Device nicht geladen.");
-            return;
-        }
-
-        // WICHTIG: Float32Array oder map(Number) für RNBO-Kompatibilität
-        const formattedSequence = sequence.map(Number);
-        const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", formattedSequence);
-        device.scheduleEvent(event);
-        console.log("📡 Gesendete Sequenz an RNBO:", formattedSequence);
-    });
-
-    // Optional: Automatisch senden nach 2 Sekunden (zum Testen)
-    setTimeout(() => {
-        document.getElementById("send-seq").click();
-    }, 2000);
 }
 
-// Funktion, um alle RNBO-Ausgaben zu loggen
+function sendSequenceToRNBO() {
+    if (!window.device) {
+        console.error("RNBO-Device nicht geladen.");
+        return;
+    }
+
+    // Sicherstellen, dass die Liste IMMER 8 Werte hat
+    if (sequence.length !== 8) {
+        console.error("❌ Fehler: Die Sequenz hat nicht genau 8 Werte!", sequence);
+        return;
+    }
+
+    const formattedSequence = new Float32Array(sequence);
+    const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", formattedSequence);
+    device.scheduleEvent(event);
+    console.log("📡 Gesendete Sequenz an RNBO:", formattedSequence);
+}
+
 function setupRNBOEventListener() {
     if (!device) {
         console.error("RNBO-Device nicht geladen, keine Events abonniert.");
@@ -149,5 +138,4 @@ async function loadRNBOScript(version) {
     });
 }
 
-// Starte die App
 setup();
