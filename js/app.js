@@ -55,7 +55,8 @@ async function createRNBODevice() {
         console.log("🔍 RNBO Messages:", device.messages);
 
         setupSequenceButtons();
-        setupPlayButton(); // Play-Button erst hier initialisieren!
+        setupPlayButton();
+        trackStepParameter(); // 🚀 Step-Tracking aktivieren!
         setupRNBOEventListener();
 
     } catch (error) {
@@ -132,8 +133,31 @@ function updateStepVisualization(step) {
         const stepDiv = document.getElementById(`step-${i}`);
         if (stepDiv) {
             stepDiv.style.opacity = i === step ? "1" : "0"; // Aktiver Step sichtbar, andere unsichtbar
+        } else {
+            console.warn(`⚠️ Div 'step-${i}' nicht gefunden!`);
         }
     }
+}
+
+// 🔹 Step-Tracking für den "step"-Parameter
+function trackStepParameter() {
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. Step-Tracking nicht möglich.");
+        return;
+    }
+
+    const stepParam = device.parametersById.get("step");
+
+    if (!stepParam) {
+        console.error("❌ Parameter 'step' nicht gefunden.");
+        return;
+    }
+
+    setInterval(() => {
+        const stepValue = Math.floor(stepParam.value); // Ganzzahl sicherstellen
+        console.log(`🎛️ Aktueller Step: ${stepValue}`);
+        updateStepVisualization(stepValue);
+    }, 100); // Alle 100ms prüfen
 }
 
 function setupRNBOEventListener() {
