@@ -129,25 +129,47 @@ function setupPlayButton() {
 
 
 
+const sliders = [
+    { id: "rotary1", parameter: "rotary1" },
+    { id: "rotary2", parameter: "rotary2" },
+    { id: "rotary3", parameter: "rotary3" }, // Weitere Slider hier hinzufügen
+    { id: "rotary4", parameter: "rotary4" },
+    { id: "rotary5", parameter: "rotary5" },
+    { id: "rotary6", parameter: "rotary6" },
+    { id: "rotary7", parameter: "rotary7" },
+    { id: "rotary8", parameter: "rotary8" },
+    { id: "rotary9", parameter: "rotary9" },
+    { id: "rotary10", parameter: "rotary10" },
+    { id: "rotary11", parameter: "rotary11" },
+    { id: "rotary12", parameter: "rotary12" },
+    { id: "rotary13", parameter: "rotary13" },
+    { id: "rotary14", parameter: "rotary14" },
+];
 
-let isDragging = false;
-let startX = 0;
-let startY = 0;
-let currentValue = 0; // Wert des Parameters (0–1)
 const totalFrames = 50; // Anzahl der Frames im PNG-Strip
 const sliderHeight = 200; // Höhe eines Frames in px
-const rotarySlider = document.getElementById("rotary-slider");
 
-if (rotarySlider) {
+sliders.forEach((slider) => {
+    const sliderDiv = document.getElementById(slider.id);
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentValue = 0; // Wert des Parameters (0–1)
+
+    if (!sliderDiv) {
+        console.error(`❌ Slider mit ID '${slider.id}' nicht gefunden.`);
+        return;
+    }
+
     // Slider-Styles setzen
-    rotarySlider.style.width = "200px";
-    rotarySlider.style.height = `${sliderHeight}px`;
-    rotarySlider.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')"; // Pfad zum PNG-Strip
-    rotarySlider.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
-    rotarySlider.style.backgroundPositionY = "0px";
+    sliderDiv.style.width = "200px";
+    sliderDiv.style.height = `${sliderHeight}px`;
+    sliderDiv.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')"; // Pfad zum PNG-Strip
+    sliderDiv.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
+    sliderDiv.style.backgroundPositionY = "0px";
 
     // Maus-Interaktionen
-    rotarySlider.addEventListener("mousedown", (event) => {
+    sliderDiv.addEventListener("mousedown", (event) => {
         isDragging = true;
         startX = event.clientX;
         startY = event.clientY;
@@ -161,17 +183,17 @@ if (rotarySlider) {
 
         // Kombinierte Bewegung in beide Richtungen
         const deltaCombined = (deltaX + deltaY) / 2; // Gewichtung 50/50
-        const stepChange = deltaCombined / 50; // Empfindlichkeit (größer = langsamer)
+        const stepChange = deltaCombined / 20; // Empfindlichkeit (größer = langsamer)
 
         currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1); // Begrenzen auf 0–1
 
         // Hintergrundposition im PNG-Strip aktualisieren
         const currentFrame = Math.floor(currentValue * (totalFrames - 1)); // Wert in Frame umrechnen
         const frameOffset = currentFrame * sliderHeight;
-        rotarySlider.style.backgroundPositionY = `-${frameOffset}px`;
+        sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
 
         // RNBO-Parameter aktualisieren
-        updateRNBOParameter(currentValue);
+        updateRNBOParameter(slider.parameter, currentValue);
 
         // Startposition aktualisieren
         startX = event.clientX;
@@ -181,22 +203,23 @@ if (rotarySlider) {
     window.addEventListener("mouseup", () => {
         isDragging = false;
     });
-}
+});
 
-function updateRNBOParameter(value) {
+function updateRNBOParameter(parameter, value) {
     if (!device) {
-        console.error("❌ RNBO-Device nicht geladen. Parameter kann nicht gesetzt werden.");
+        console.error(`❌ RNBO-Device nicht geladen. Parameter '${parameter}' kann nicht gesetzt werden.`);
         return;
     }
 
-    const rotaryParam = device.parametersById.get("rotary"); // Ersetze 'rotary' mit deinem Parameter-Namen
-    if (rotaryParam) {
-        rotaryParam.value = value;
-        console.log(`🎛️ Rotary-Wert auf ${value.toFixed(2)} gesetzt.`);
+    const param = device.parametersById.get(parameter);
+    if (param) {
+        param.value = value;
+        console.log(`🎛️ Wert von '${parameter}' auf ${value.toFixed(2)} gesetzt.`);
     } else {
-        console.error("❌ Parameter 'rotary' nicht gefunden.");
+        console.error(`❌ Parameter '${parameter}' nicht gefunden.`);
     }
 }
+
 
 
 
