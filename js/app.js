@@ -60,7 +60,7 @@ async function createRNBODevice() {
 
         setupSequenceButtons();
         setupPlayButton();
-        trackStepParameter();
+        trackStepParameters(); // ✅ Stelle sicher, dass der richtige Name hier verwendet wird!
         setupRNBOEventListener();
 
     } catch (error) {
@@ -251,7 +251,7 @@ function updateStepVisualizations(step, step16) {
     }
 }
 
-// 🔹 Step-Tracking für "step" und "step16"-Parameter
+// 🔹 Step-Tracking für "step" (0-31) und "step16" (0-15)
 function trackStepParameters() {
     if (!device) {
         console.error("❌ RNBO-Device nicht geladen. Step-Tracking nicht möglich.");
@@ -273,6 +273,7 @@ function trackStepParameters() {
         updateStepVisualizations(stepValue, step16Value);
     }, 10);
 }
+
 
 // 🔹 Event Listener für RNBO
 function setupRNBOEventListener() {
