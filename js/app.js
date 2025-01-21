@@ -114,11 +114,14 @@ function sendSequenceToRNBO() {
         return;
     }
 
-    const formattedSequence = new Float32Array(sequence);
+    // Sicherstellen, dass die Werte als reine Zahlen gesendet werden
+    const formattedSequence = sequence.map(Number); // Alternative zu Float32Array
     const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq", formattedSequence);
     device.scheduleEvent(event);
+
     console.log("📡 Gesendete Sequenz an RNBO:", formattedSequence);
 }
+
 
 
 function setupRNBOEventListener() {
