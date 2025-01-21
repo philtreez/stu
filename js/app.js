@@ -158,7 +158,7 @@ function trackStepParameter() {
         const stepValue = Math.floor(stepParam.value); // Ganzzahl sicherstellen
         console.log(`🎛️ Aktueller Step: ${stepValue}`);
         updateStepVisualization(stepValue);
-    }, 100); // Alle 100ms prüfen
+    }, 10); // Alle 100ms prüfen
 }
 
 function setupRNBOEventListener() {
