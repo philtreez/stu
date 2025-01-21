@@ -2,12 +2,16 @@ let device;
 let context;
 let outputNode;
 
-// 4 Sequenzen mit je 32 Steps
+// 4 Sequenzen mit 32 Steps & 4 Sequenzen mit 16 Steps
 let sequences = {
     seq1: Array(32).fill(0),
     seq2: Array(32).fill(0),
     seq3: Array(32).fill(0),
     seq4: Array(32).fill(0),
+    seq5: Array(16).fill(0), // Neue Sequenz
+    seq6: Array(16).fill(0), // Neue Sequenz
+    seq7: Array(16).fill(0), // Neue Sequenz
+    seq8: Array(16).fill(0)  // Neue Sequenz
 };
 
 async function setup() {
@@ -56,7 +60,7 @@ async function createRNBODevice() {
 
         setupSequenceButtons();
         setupPlayButton();
-        trackStepParameter(); // 🚀 Step-Tracking aktivieren!
+        trackStepParameter();
         setupRNBOEventListener();
 
     } catch (error) {
@@ -65,12 +69,14 @@ async function createRNBODevice() {
 }
 
 function setupSequenceButtons() {
-    Object.keys(sequences).forEach((seq, seqIndex) => {
-        for (let i = 0; i < 32; i++) {
+    Object.keys(sequences).forEach((seq) => {
+        const stepCount = sequences[seq].length; // Dynamisch 16 oder 32
+
+        for (let i = 0; i < stepCount; i++) {
             const divButton = document.getElementById(`btn-${seq}-${i}`);
             if (divButton) {
                 divButton.style.cursor = "pointer";
-                divButton.innerText = sequences[seq][i]; // Startwert setzen
+                divButton.innerText = sequences[seq][i];
 
                 divButton.addEventListener("click", () => {
                     sequences[seq][i] = sequences[seq][i] === 0 ? 1 : 0;
@@ -88,13 +94,14 @@ function setupSequenceButtons() {
 
 function sendSequenceToRNBO(seq) {
     if (!device) {
-        console.error(`❌ RNBO-Device ist noch nicht geladen. Warte 1 Sekunde und versuche erneut für ${seq}...`);
+        console.error(`❌ RNBO-Device nicht geladen. Warte 1 Sekunde und versuche erneut für ${seq}...`);
         setTimeout(() => sendSequenceToRNBO(seq), 1000);
         return;
     }
 
-    if (sequences[seq].length !== 32) {
-        console.error(`❌ Fehler: Die Sequenz ${seq} hat nicht genau 32 Werte!`, sequences[seq]);
+    const stepCount = sequences[seq].length;
+    if (![16, 32].includes(stepCount)) {
+        console.error(`❌ Fehler: Die Sequenz ${seq} hat nicht genau 16 oder 32 Werte!`, sequences[seq]);
         return;
     }
 
@@ -144,6 +151,8 @@ const sliders = [
     { id: "rotary12", parameter: "rotary12" },
     { id: "rotary13", parameter: "rotary13" },
     { id: "rotary14", parameter: "rotary14" },
+    { id: "rotary15", parameter: "rotary15" },
+    { id: "rotary16", parameter: "rotary16" },
 ];
 
 const totalFrames = 50; // Anzahl der Frames im PNG-Strip
@@ -183,7 +192,7 @@ sliders.forEach((slider) => {
 
         // Kombinierte Bewegung in beide Richtungen
         const deltaCombined = (deltaX + deltaY) / 2; // Gewichtung 50/50
-        const stepChange = deltaCombined / 20; // Empfindlichkeit (größer = langsamer)
+        const stepChange = deltaCombined / 50; // Empfindlichkeit (größer = langsamer)
 
         currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1); // Begrenzen auf 0–1
 
@@ -223,40 +232,49 @@ function updateRNBOParameter(parameter, value) {
 
 
 
-// 🔹 Funktion zur Aktualisierung der Step-Visualisierung
-function updateStepVisualization(step) {
+// 🔹 Funktion zur Aktualisierung der Step-Visualisierungen (0-31 & 0-15)
+function updateStepVisualizations(step, step16) {
+    // 1️⃣ Aktualisiere die Haupt-Visualisierung (0-31 Steps)
     for (let i = 0; i < 32; i++) {
         const stepDiv = document.getElementById(`step-${i}`);
         if (stepDiv) {
-            stepDiv.style.opacity = i === step ? "1" : "0"; // Aktiver Step sichtbar, andere unsichtbar
-        } else {
-            console.warn(`⚠️ Div 'step-${i}' nicht gefunden!`);
+            stepDiv.style.opacity = i === step ? "1" : "0";
+        }
+    }
+
+    // 2️⃣ Aktualisiere die zweite Visualisierung (0-15 Steps)
+    for (let i = 0; i < 16; i++) {
+        const stepDiv = document.getElementById(`step16-${i}`);
+        if (stepDiv) {
+            stepDiv.style.opacity = i === step16 ? "1" : "0";
         }
     }
 }
 
-
-// 🔹 Step-Tracking für den "step"-Parameter
-function trackStepParameter() {
+// 🔹 Step-Tracking für "step" und "step16"-Parameter
+function trackStepParameters() {
     if (!device) {
         console.error("❌ RNBO-Device nicht geladen. Step-Tracking nicht möglich.");
         return;
     }
 
     const stepParam = device.parametersById.get("step");
+    const step16Param = device.parametersById.get("step16");
 
-    if (!stepParam) {
-        console.error("❌ Parameter 'step' nicht gefunden.");
+    if (!stepParam || !step16Param) {
+        console.error("❌ Ein oder beide Step-Parameter ('step', 'step16') nicht gefunden.");
         return;
     }
 
     setInterval(() => {
-        const stepValue = Math.floor(stepParam.value); // Ganzzahl sicherstellen
-        console.log(`🎛️ Aktueller Step: ${stepValue}`);
-        updateStepVisualization(stepValue);
-    }, 10); // Alle 100ms prüfen
+        const stepValue = Math.floor(stepParam.value); // 0-31
+        const step16Value = Math.floor(step16Param.value); // 0-15
+        console.log(`🎛️ Aktueller Step: ${stepValue} | Step16: ${step16Value}`);
+        updateStepVisualizations(stepValue, step16Value);
+    }, 10);
 }
 
+// 🔹 Event Listener für RNBO
 function setupRNBOEventListener() {
     if (!device) {
         console.error("RNBO-Device nicht geladen, keine Events abonniert.");
@@ -268,10 +286,19 @@ function setupRNBOEventListener() {
 
         if (ev.tag === "step") {
             const stepValue = parseInt(ev.payload, 10);
-            updateStepVisualization(stepValue);
+            const step16Value = device.parametersById.get("step16") ? Math.floor(device.parametersById.get("step16").value) : 0;
+            updateStepVisualizations(stepValue, step16Value);
+        }
+
+        if (ev.tag === "step16") {
+            const step16Value = parseInt(ev.payload, 10);
+            const stepValue = device.parametersById.get("step") ? Math.floor(device.parametersById.get("step").value) : 0;
+            updateStepVisualizations(stepValue, step16Value);
         }
     });
 }
+
+
 
 async function loadRNBOScript(version) {
     return new Promise((resolve, reject) => {
