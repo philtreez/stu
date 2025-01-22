@@ -418,6 +418,25 @@ function updateRNBOParameter(parameter, value) {
     }
 }
 
+function sendSequenceToRNBO(seq) {
+    if (!device) {
+        console.error(`❌ RNBO-Device nicht geladen. Warte 1 Sekunde und versuche erneut für ${seq}...`);
+        setTimeout(() => sendSequenceToRNBO(seq), 1000);
+        return;
+    }
+
+    const stepCount = sequences[seq].length;
+    if (![16, 32].includes(stepCount)) {
+        console.error(`❌ Fehler: Die Sequenz ${seq} hat nicht genau 16 oder 32 Werte!`, sequences[seq]);
+        return;
+    }
+
+    const formattedSequence = sequences[seq].map(Number);
+    const event = new RNBO.MessageEvent(RNBO.TimeNow, seq, formattedSequence);
+    device.scheduleEvent(event);
+
+    console.log(`📡 Gesendete Sequenz an RNBO (${seq}):`, formattedSequence);
+}
 
 
 async function loadRNBOScript(version) {
