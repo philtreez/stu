@@ -190,6 +190,8 @@ const sliders = [
     { id: "rotary40", parameter: "rotary40" },
     { id: "rotary41", parameter: "rotary41" },
     { id: "rotary42", parameter: "rotary42" },
+    { id: "rotary43", parameter: "rotary43" },
+    { id: "rotary44", parameter: "rotary44" },
 ];
 
 const totalFrames = 50; // Anzahl der Frames im PNG-Strip
@@ -315,7 +317,7 @@ function initializeSliders(sliders, sequenceKey) {
             const deltaX = event.clientX - startX;
             const deltaY = startY - event.clientY;
             const deltaCombined = (deltaX + deltaY) / 2;
-            const stepChange = deltaCombined / 20;
+            const stepChange = deltaCombined / 70;
 
             currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1);
             sequences[sequenceKey][index] = currentValue; // Wert in Sequence speichern
