@@ -240,9 +240,9 @@ function updateRNBOParameter(parameter, value) {
 
 
 
-// 🔹 Funktion zur Aktualisierung der Step-Visualisierungen (0-31 & 0-15)
-function updateStepVisualizations(step, step16) {
-    // 1️⃣ Aktualisiere die Haupt-Visualisierung (0-31 Steps)
+// 🔹 Funktion zur Aktualisierung aller drei Step-Visualisierungen
+function updateStepVisualizations(step, step16, step16alt) {
+    // 1️⃣ Haupt-Visualisierung für 32 Steps (0-31)
     for (let i = 0; i < 32; i++) {
         const stepDiv = document.getElementById(`step-${i}`);
         if (stepDiv) {
@@ -250,16 +250,24 @@ function updateStepVisualizations(step, step16) {
         }
     }
 
-    // 2️⃣ Aktualisiere die zweite Visualisierung (0-15 Steps)
+    // 2️⃣ Erste 16-Step-Visualisierung (step16)
     for (let i = 0; i < 16; i++) {
         const stepDiv = document.getElementById(`step16-${i}`);
         if (stepDiv) {
             stepDiv.style.opacity = i === step16 ? "1" : "0";
         }
     }
+
+    // 3️⃣ Zweite 16-Step-Visualisierung (step16alt)
+    for (let i = 0; i < 16; i++) {
+        const stepDiv = document.getElementById(`step16alt-${i}`);
+        if (stepDiv) {
+            stepDiv.style.opacity = i === step16alt ? "1" : "0";
+        }
+    }
 }
 
-// 🔹 Step-Tracking für "step" (0-31) und "step16" (0-15)
+// 🔹 Step-Tracking für "step", "step16" und "step16alt"
 function trackStepParameters() {
     if (!device) {
         console.error("❌ RNBO-Device nicht geladen. Step-Tracking nicht möglich.");
@@ -268,20 +276,22 @@ function trackStepParameters() {
 
     const stepParam = device.parametersById.get("step");
     const step16Param = device.parametersById.get("step16");
+    const step16altParam = device.parametersById.get("step16alt");
 
-    if (!stepParam || !step16Param) {
-        console.error("❌ Ein oder beide Step-Parameter ('step', 'step16') nicht gefunden.");
+    if (!stepParam || !step16Param || !step16altParam) {
+        console.error("❌ Ein oder mehrere Step-Parameter ('step', 'step16', 'step16alt') nicht gefunden.");
         return;
     }
 
     setInterval(() => {
-        const stepValue = Math.floor(stepParam.value); // 0-31
-        const step16Value = Math.floor(step16Param.value); // 0-15
-        console.log(`🎛️ Aktueller Step: ${stepValue} | Step16: ${step16Value}`);
-        updateStepVisualizations(stepValue, step16Value);
+        const stepValue = Math.floor(stepParam.value);      // 0-31
+        const step16Value = Math.floor(step16Param.value);  // 0-15
+        const step16altValue = Math.floor(step16altParam.value); // 0-15
+
+        console.log(`🎛️ Steps - step: ${stepValue} | step16: ${step16Value} | step16alt: ${step16altValue}`);
+        updateStepVisualizations(stepValue, step16Value, step16altValue);
     }, 10);
 }
-
 
 // 🔹 Event Listener für RNBO
 function setupRNBOEventListener() {
@@ -293,19 +303,18 @@ function setupRNBOEventListener() {
     device.messageEvent.subscribe((ev) => {
         console.log(`📡 Empfangenes RNBO-Event: ${ev.tag}:`, ev.payload);
 
-        if (ev.tag === "step") {
-            const stepValue = parseInt(ev.payload, 10);
-            const step16Value = device.parametersById.get("step16") ? Math.floor(device.parametersById.get("step16").value) : 0;
-            updateStepVisualizations(stepValue, step16Value);
-        }
+        let stepValue = device.parametersById.get("step") ? Math.floor(device.parametersById.get("step").value) : 0;
+        let step16Value = device.parametersById.get("step16") ? Math.floor(device.parametersById.get("step16").value) : 0;
+        let step16altValue = device.parametersById.get("step16alt") ? Math.floor(device.parametersById.get("step16alt").value) : 0;
 
-        if (ev.tag === "step16") {
-            const step16Value = parseInt(ev.payload, 10);
-            const stepValue = device.parametersById.get("step") ? Math.floor(device.parametersById.get("step").value) : 0;
-            updateStepVisualizations(stepValue, step16Value);
-        }
+        if (ev.tag === "step") stepValue = parseInt(ev.payload, 10);
+        if (ev.tag === "step16") step16Value = parseInt(ev.payload, 10);
+        if (ev.tag === "step16alt") step16altValue = parseInt(ev.payload, 10);
+
+        updateStepVisualizations(stepValue, step16Value, step16altValue);
     });
 }
+
 
 
 
