@@ -61,6 +61,7 @@ async function createRNBODevice() {
 
         setupSequenceButtons();
         setupPlayButton();
+        setupRecButton();
         trackStepParameters(); // ✅ Stelle sicher, dass der richtige Name hier verwendet wird!
         setupRNBOEventListener();
 
@@ -145,6 +146,27 @@ function setupPlayButton() {
     }
 }
 
+// ------ rec-Button Steuerung ------
+function setupRecButton() {
+    const recButton = document.getElementById("rec");
+
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. Play-Button kann nicht gesetzt werden.");
+        return;
+    }
+
+    const recParam = device.parametersById.get("rec");
+
+    if (recButton && recParam) {
+        recButton.addEventListener("click", () => {
+            const newValue = playParam.value === 0 ? 1 : 0;
+            recParam.value = newValue;
+            console.log(`🎛️ Rec state set to: ${newValue}`);
+        });
+    } else {
+        console.error("❌ Play-Button oder Parameter nicht gefunden.");
+    }
+}
 
 
 const sliders = [
