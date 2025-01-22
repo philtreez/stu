@@ -11,7 +11,8 @@ let sequences = {
     seq5: Array(16).fill(0), // Neue Sequenz
     seq6: Array(16).fill(0), // Neue Sequenz
     seq7: Array(16).fill(0), // Neue Sequenz
-    seq8: Array(16).fill(0)  // Neue Sequenz
+    seq8: Array(16).fill(0),  // Neue Sequenz
+    seq9: Array(16).fill(0)
 };
 
 async function setup() {
@@ -307,6 +308,56 @@ function initializeSliders(sliders, sequenceKey) {
     });
 }
 
+// 🔵 16 Werte für seq9 initialisieren (Nummern-Boxen 0-8)
+sequences.seq9 = Array(16).fill(0); // Standardwerte = 0
+
+// 🟢 Nummern-Boxen für seq9 erzeugen und initialisieren
+function initializeSeq9NumberBoxes() {
+    for (let i = 0; i < 16; i++) {
+        const numBox = document.getElementById(`seq9-box-${i}`);
+        if (!numBox) {
+            console.error(`❌ Nummern-Box mit ID 'seq9-box-${i}' nicht gefunden.`);
+            continue;
+        }
+
+        numBox.value = sequences.seq9[i]; // Initialwert setzen
+        numBox.min = 0;
+        numBox.max = 8;
+        numBox.step = 1;
+
+        numBox.addEventListener("change", (event) => {
+            const newValue = Math.min(Math.max(parseInt(event.target.value, 10), 0), 8); // Begrenzen auf 0–8
+            sequences.seq9[i] = newValue; // Wert in seq9 speichern
+            console.log(`🔢 Nummern-Box seq9-${i} geändert: Neuer Wert = ${newValue}`);
+            sendSequenceToRNBO("seq9"); // Sequenz an RNBO senden
+        });
+    }
+}
+
+// 🔹 RNBO-Event für seq9 senden
+function sendSequenceToRNBO(seq) {
+    if (!device) {
+        console.error(`❌ RNBO-Device nicht geladen. Warte 1 Sekunde und versuche erneut für ${seq}...`);
+        setTimeout(() => sendSequenceToRNBO(seq), 1000);
+        return;
+    }
+
+    if (sequences[seq].length !== 16) {
+        console.error(`❌ Fehler: Die Sequenz ${seq} hat nicht genau 16 Werte!`, sequences[seq]);
+        return;
+    }
+
+    const formattedSequence = sequences[seq].map(Number);
+    const event = new RNBO.MessageEvent(RNBO.TimeNow, seq, formattedSequence);
+    device.scheduleEvent(event);
+
+    console.log(`📡 Gesendete Sequenz an RNBO (${seq}):`, formattedSequence);
+}
+
+// 🟢 Nummern-Boxen initialisieren
+initializeSeq9NumberBoxes();
+
+
 // 🟢 RNBO-Event senden für seq6 und seq8
 function sendSequenceToRNBO(seq) {
     if (!device) {
@@ -360,6 +411,14 @@ function updateStepVisualizations(step, step16, step16alt) {
 
     // 🔥 NEU: Steuerung aller Divs mit der Klasse "step16-extra"
     document.querySelectorAll(".step16-extra").forEach((element, index) => {
+        element.style.opacity = index === step16 ? "1" : "0";
+    });    
+    
+    document.querySelectorAll(".step16-extra2").forEach((element, index) => {
+        element.style.opacity = index === step16 ? "1" : "0";
+    });
+
+    document.querySelectorAll(".step16-extra3").forEach((element, index) => {
         element.style.opacity = index === step16 ? "1" : "0";
     });
 }
