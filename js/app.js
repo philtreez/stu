@@ -247,8 +247,11 @@ function updateRNBOParameter(parameter, value) {
 
 // 🔹 16 Rotary Sliders für seq6 definieren
 const seq6Sliders = [];
+const seq8Sliders = []; // 🆕 Hier seq8Sliders definieren!
+
 for (let i = 0; i < 16; i++) {
-    seq6Sliders.push({ id: `seq6-slider-${i}`, parameter: `seq6-${i}` });
+    seq6Sliders.push({ id: `seq6-slider-${i}`, parameter: `seq6_${i}` });
+    seq8Sliders.push({ id: `seq8-slider-${i}`, parameter: `seq8_${i}` }); // 🆕 seq8 hinzufügen
 }
 
 // 🟢 Initialisierung der 16 Sliders für seq6
@@ -308,7 +311,7 @@ seq6Sliders.forEach((slider, index) => {
     });
 });
 
-// 🆕 Initialisierung der 16 Sliders für seq8 (genau wie für seq6)
+// 🆕 Initialisierung der 16 Sliders für seq8
 seq8Sliders.forEach((slider, index) => {
     const sliderDiv = document.getElementById(slider.id);
     let isDragging = false;
@@ -364,8 +367,6 @@ seq8Sliders.forEach((slider, index) => {
         isDragging = false;
     });
 });
-
-
 
 
 // 🔹 Funktion zur Aktualisierung aller drei Step-Visualisierungen
