@@ -369,9 +369,8 @@ seq8Sliders.forEach((slider, index) => {
 });
 
 
-// 🔹 Funktion zur Aktualisierung aller drei Step-Visualisierungen
 function updateStepVisualizations(step, step16, step16alt) {
-    // 1️⃣ Haupt-Visualisierung für 32 Steps (0-31)
+    // 🔹 Existierende 32-Step Visualisierung
     for (let i = 0; i < 32; i++) {
         const stepDiv = document.getElementById(`step-${i}`);
         if (stepDiv) {
@@ -379,7 +378,7 @@ function updateStepVisualizations(step, step16, step16alt) {
         }
     }
 
-    // 2️⃣ Erste 16-Step-Visualisierung (step16)
+    // 🔹 Existierende 16-Step Visualisierung (step16)
     for (let i = 0; i < 16; i++) {
         const stepDiv = document.getElementById(`step16-${i}`);
         if (stepDiv) {
@@ -387,14 +386,20 @@ function updateStepVisualizations(step, step16, step16alt) {
         }
     }
 
-    // 3️⃣ Zweite 16-Step-Visualisierung (step16alt)
+    // 🔹 Existierende 16-Step Visualisierung (step16alt)
     for (let i = 0; i < 16; i++) {
         const stepDiv = document.getElementById(`step16alt-${i}`);
         if (stepDiv) {
             stepDiv.style.opacity = i === step16alt ? "1" : "0";
         }
     }
+
+    // 🔥 NEU: Steuerung aller Divs mit der Klasse "step16-extra"
+    document.querySelectorAll(".step16-extra").forEach((element, index) => {
+        element.style.opacity = index === step16 ? "1" : "0";
+    });
 }
+
 
 // 🔹 Step-Tracking für "step", "step16" und "step16alt"
 function trackStepParameters() {
