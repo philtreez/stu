@@ -18,6 +18,10 @@ let sequences = {
 async function setup() {
     console.log("Setup wird gestartet...");
     const patchExportURL = "https://stu-philtreezs-projects.vercel.app/export/patch.export.json";
+    const WAContext = window.AudioContext || window.webkitAudioContext;
+    const context = new WAContext();
+    const outputNode = context.createGain();
+    outputNode.connect(context.destination);
 
     context = null;
     outputNode = null;
