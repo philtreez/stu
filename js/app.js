@@ -59,6 +59,7 @@ async function createRNBODevice() {
         console.log("RNBO-Device erfolgreich erstellt.");
         console.log("🔍 RNBO Messages:", device.messages);
 
+        startWaveformVisualization(device, context); // 👈 Hier aufrufen!
         setupSequenceButtons();
         setupPlayButton();
         setupRecButton();
