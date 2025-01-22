@@ -70,27 +70,27 @@ async function createRNBODevice() {
 
 function setupSequenceButtons() {
     Object.keys(sequences).forEach((seq) => {
-        const stepCount = sequences[seq].length; // Dynamisch 16 oder 32
+        if (seq === "seq6") return; // ⛔ seq6 überspringen (weil sie Sliders nutzt!)
 
-        for (let i = 0; i < stepCount; i++) {
+        for (let i = 0; i < sequences[seq].length; i++) {
             const divButton = document.getElementById(`btn-${seq}-${i}`);
             if (divButton) {
                 divButton.style.cursor = "pointer";
-                divButton.innerText = sequences[seq][i];
+                divButton.innerText = sequences[seq][i]; 
 
                 divButton.addEventListener("click", () => {
                     sequences[seq][i] = sequences[seq][i] === 0 ? 1 : 0;
                     divButton.innerText = sequences[seq][i];
                     console.log(`Button ${seq}-${i} geklickt! Neue Sequenz für ${seq}:`, sequences[seq]);
-
                     sendSequenceToRNBO(seq);
                 });
             } else {
-                console.warn(`DIV-Button btn-${seq}-${i} nicht gefunden`);
+                console.warn(`⚠️ DIV-Button btn-${seq}-${i} nicht gefunden`);
             }
         }
     });
 }
+
 
 function sendSequenceToRNBO(seq) {
     if (!device) {
