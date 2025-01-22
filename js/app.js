@@ -586,12 +586,12 @@ async function startWaveformVisualization(device, context) {
         const dataBuffer = await device.releaseDataBuffer(bufferDescription.id);
         const audioBuffer = await dataBuffer.getAsAudioBuffer(context);
         const canvas = document.getElementById("waveformCanvas");
+
         if (!canvas || !canvas.getContext) {
             console.error("waveformCanvas not found or not a valid canvas element.");
             return;
         }
 
-        // Setze das Canvas auf die im Designer definierte Größe
         const ctx = canvas.getContext("2d");
 
         function draw() {
@@ -625,4 +625,12 @@ async function startWaveformVisualization(device, context) {
     }
 }
 
+// Setup-Funktion aufrufen
 setup();
+
+// 🔄 **Regelmäßige Aktualisierung alle 1000ms (1 Sekunde)**
+setInterval(() => {
+    if (device && context) {
+        startWaveformVisualization(device, context);
+    }
+}, 1000);
