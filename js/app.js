@@ -92,6 +92,34 @@ function setupSequenceButtons() {
     });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    // Wähle alle 16 Number-Boxen aus
+    const numberBoxes = document.querySelectorAll(".number-box");
+
+    // Initiale Werte setzen (aus seq9)
+    numberBoxes.forEach((box, index) => {
+        box.value = sequences.seq9[index]; // Falls du Standardwerte hast
+    });
+
+    // Funktion zum Aktualisieren der Werte
+    function updateSeq9() {
+        let values = [];
+        numberBoxes.forEach((box, index) => {
+            let value = parseInt(box.value, 10); // Integer auslesen
+            value = Math.min(Math.max(value, 0), 8); // Begrenzen auf 0-8
+            sequences.seq9[index] = value;
+            values.push(value);
+        });
+
+        // Werte an RNBO senden
+        sendSequenceToRNBO("seq9");
+    }
+
+    // Event-Listener für Änderungen in den Boxen
+    numberBoxes.forEach((box) => {
+        box.addEventListener("change", updateSeq9);
+    });
+});
 
 
 
