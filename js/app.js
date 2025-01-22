@@ -227,128 +227,100 @@ function updateRNBOParameter(parameter, value) {
     }
 }
 
-// 🔹 16 Rotary Sliders für seq6 definieren
+/// 🔹 16 Rotary Sliders für seq6 und seq8 definieren
 const seq6Sliders = [];
-const seq8Sliders = []; // 🆕 Hier seq8Sliders definieren!
+const seq8Sliders = [];
 
 for (let i = 0; i < 16; i++) {
-    seq6Sliders.push({ id: `seq6-slider-${i}`, parameter: `seq6_${i}` });
-    seq8Sliders.push({ id: `seq8-slider-${i}`, parameter: `seq8_${i}` }); // 🆕 seq8 hinzufügen
+    seq6Sliders.push({ id: `seq6-slider-${i}` });
+    seq8Sliders.push({ id: `seq8-slider-${i}` });
 }
 
 // 🟢 Initialisierung der 16 Sliders für seq6
-seq6Sliders.forEach((slider, index) => {
-    const sliderDiv = document.getElementById(slider.id);
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let currentValue = sequences.seq6[index]; // Initialer Wert aus seq6
+function initializeSliders(sliders, sequenceKey) {
+    sliders.forEach((slider, index) => {
+        const sliderDiv = document.getElementById(slider.id);
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
 
-    if (!sliderDiv) {
-        console.error(`❌ Slider mit ID '${slider.id}' nicht gefunden.`);
+        if (!sliderDiv) {
+            console.error(`❌ Slider mit ID '${slider.id}' nicht gefunden.`);
+            return;
+        }
+
+        // Initialen Wert aus der Sequence setzen
+        let currentValue = sequences[sequenceKey] ? sequences[sequenceKey][index] : 0;
+
+        // 🟢 Initiale Darstellung setzen
+        const currentFrame = Math.floor(currentValue * (totalFrames - 1));
+        const frameOffset = currentFrame * sliderHeight;
+        sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
+
+        // Slider-Styles setzen
+        sliderDiv.style.width = "200px";
+        sliderDiv.style.height = `${sliderHeight}px`;
+        sliderDiv.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')";
+        sliderDiv.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
+
+        // Maus-Interaktionen
+        sliderDiv.addEventListener("mousedown", (event) => {
+            isDragging = true;
+            startX = event.clientX;
+            startY = event.clientY;
+        });
+
+        window.addEventListener("mousemove", (event) => {
+            if (!isDragging) return;
+
+            const deltaX = event.clientX - startX;
+            const deltaY = startY - event.clientY;
+            const deltaCombined = (deltaX + deltaY) / 2;
+            const stepChange = deltaCombined / 20;
+
+            currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1);
+            sequences[sequenceKey][index] = currentValue; // Wert in Sequence speichern
+
+            const newFrame = Math.floor(currentValue * (totalFrames - 1));
+            const newOffset = newFrame * sliderHeight;
+            sliderDiv.style.backgroundPositionY = `-${newOffset}px`;
+
+            sendSequenceToRNBO(sequenceKey);
+
+            startX = event.clientX;
+            startY = event.clientY;
+        });
+
+        window.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
+    });
+}
+
+// 🟢 RNBO-Event senden für seq6 und seq8
+function sendSequenceToRNBO(seq) {
+    if (!device) {
+        console.error(`❌ RNBO-Device nicht geladen. Warte 1 Sekunde und versuche erneut für ${seq}...`);
+        setTimeout(() => sendSequenceToRNBO(seq), 1000);
         return;
     }
 
-    // 🟢 Initiale Darstellung setzen
-    const currentFrame = Math.floor(currentValue * (totalFrames - 1));
-    const frameOffset = currentFrame * sliderHeight;
-    sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
-
-    // Slider-Styles setzen
-    sliderDiv.style.width = "200px";
-    sliderDiv.style.height = `${sliderHeight}px`;
-    sliderDiv.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')";
-    sliderDiv.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
-
-    // Maus-Interaktionen
-    sliderDiv.addEventListener("mousedown", (event) => {
-        isDragging = true;
-        startX = event.clientX;
-        startY = event.clientY;
-    });
-
-    window.addEventListener("mousemove", (event) => {
-        if (!isDragging) return;
-
-        const deltaX = event.clientX - startX;
-        const deltaY = startY - event.clientY;
-        const deltaCombined = (deltaX + deltaY) / 2;
-        const stepChange = deltaCombined / 20;
-
-        currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1);
-        sequences.seq6[index] = currentValue; // Wert in seq6 speichern
-
-        const newFrame = Math.floor(currentValue * (totalFrames - 1));
-        const newOffset = newFrame * sliderHeight;
-        sliderDiv.style.backgroundPositionY = `-${newOffset}px`;
-
-        updateRNBOParameter(slider.parameter, currentValue);
-
-        startX = event.clientX;
-        startY = event.clientY;
-    });
-
-    window.addEventListener("mouseup", () => {
-        isDragging = false;
-    });
-});
-
-// 🆕 Initialisierung der 16 Sliders für seq8
-seq8Sliders.forEach((slider, index) => {
-    const sliderDiv = document.getElementById(slider.id);
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let currentValue = sequences.seq8[index]; // Initialer Wert aus seq8
-
-    if (!sliderDiv) {
-        console.error(`❌ Slider mit ID '${slider.id}' nicht gefunden.`);
+    if (sequences[seq].length !== 16) {
+        console.error(`❌ Fehler: Die Sequenz ${seq} hat nicht genau 16 Werte!`, sequences[seq]);
         return;
     }
 
-    // 🟢 Initiale Darstellung setzen
-    const currentFrame = Math.floor(currentValue * (totalFrames - 1));
-    const frameOffset = currentFrame * sliderHeight;
-    sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
+    const formattedSequence = sequences[seq].map(Number);
+    const event = new RNBO.MessageEvent(RNBO.TimeNow, seq, formattedSequence);
+    device.scheduleEvent(event);
 
-    // Slider-Styles setzen
-    sliderDiv.style.width = "200px";
-    sliderDiv.style.height = `${sliderHeight}px`;
-    sliderDiv.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')";
-    sliderDiv.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
+    console.log(`📡 Gesendete Sequenz an RNBO (${seq}):`, formattedSequence);
+}
 
-    // Maus-Interaktionen
-    sliderDiv.addEventListener("mousedown", (event) => {
-        isDragging = true;
-        startX = event.clientX;
-        startY = event.clientY;
-    });
+// Initialisierung aufrufen
+initializeSliders(seq6Sliders, "seq6");
+initializeSliders(seq8Sliders, "seq8");
 
-    window.addEventListener("mousemove", (event) => {
-        if (!isDragging) return;
-
-        const deltaX = event.clientX - startX;
-        const deltaY = startY - event.clientY;
-        const deltaCombined = (deltaX + deltaY) / 2;
-        const stepChange = deltaCombined / 20;
-
-        currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1);
-        sequences.seq8[index] = currentValue; // Wert in seq8 speichern
-
-        const newFrame = Math.floor(currentValue * (totalFrames - 1));
-        const newOffset = newFrame * sliderHeight;
-        sliderDiv.style.backgroundPositionY = `-${newOffset}px`;
-
-        updateRNBOParameter(slider.parameter, currentValue);
-
-        startX = event.clientX;
-        startY = event.clientY;
-    });
-
-    window.addEventListener("mouseup", () => {
-        isDragging = false;
-    });
-});
 
 
 function updateStepVisualizations(step, step16, step16alt) {
@@ -446,46 +418,6 @@ function updateRNBOParameter(parameter, value) {
     }
 }
 
-
-// 🔹 Funktion zum Senden der vollständigen 16-Float-Wert-Liste an seq6 in RNBO
-function sendSeq6ToRNBO() {
-    if (!device) {
-        console.error(`❌ RNBO-Device ist noch nicht geladen. Warte 1 Sekunde und versuche erneut für seq6...`);
-        setTimeout(() => sendSeq6ToRNBO(), 1000);
-        return;
-    }
-
-    if (sequences.seq6.length !== 16) {
-        console.error(`❌ Fehler: Die Sequenz seq6 hat nicht genau 16 Werte!`, sequences.seq6);
-        return;
-    }
-
-    const formattedSequence = sequences.seq6.map(Number);
-    const event = new RNBO.MessageEvent(RNBO.TimeNow, "seq6", formattedSequence);
-    device.scheduleEvent(event);
-
-    console.log(`📡 Gesendete Sequenz an RNBO (seq6):`, formattedSequence);
-}
-
-function sendSequenceToRNBO(seq) {
-    if (!device) {
-        console.error(`❌ RNBO-Device nicht geladen. Warte 1 Sekunde und versuche erneut für ${seq}...`);
-        setTimeout(() => sendSequenceToRNBO(seq), 1000);
-        return;
-    }
-
-    const stepCount = sequences[seq].length;
-    if (![16, 32].includes(stepCount)) {
-        console.error(`❌ Fehler: Die Sequenz ${seq} hat nicht genau 16 oder 32 Werte!`, sequences[seq]);
-        return;
-    }
-
-    const formattedSequence = sequences[seq].map(Number);
-    const event = new RNBO.MessageEvent(RNBO.TimeNow, seq, formattedSequence);
-    device.scheduleEvent(event);
-
-    console.log(`📡 Gesendete Sequenz an RNBO (${seq}):`, formattedSequence);
-}
 
 
 async function loadRNBOScript(version) {
