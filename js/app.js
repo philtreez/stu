@@ -257,12 +257,17 @@ seq6Sliders.forEach((slider, index) => {
     let isDragging = false;
     let startX = 0;
     let startY = 0;
-    let currentValue = sequences.seq6[index]; // Startwert für diesen Slider
+    let currentValue = sequences.seq6[index]; // Startwert für diesen Slider setzen
 
     if (!sliderDiv) {
         console.error(`❌ Slider mit ID '${slider.id}' nicht gefunden.`);
         return;
     }
+
+    // 🟢 Initiale Darstellung setzen
+    const currentFrame = Math.floor(currentValue * (totalFrames - 1));
+    const frameOffset = currentFrame * sliderHeight;
+    sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
 
     // Slider-Styles setzen
     sliderDiv.style.width = "200px";
