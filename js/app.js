@@ -161,6 +161,11 @@ const sliders = [
     { id: "rotary22", parameter: "rotary22" },
     { id: "rotary23", parameter: "rotary23" },
     { id: "rotary24", parameter: "rotary24" },
+    { id: "rotary25", parameter: "rotary25" },
+    { id: "rotary26", parameter: "rotary26" },
+    { id: "rotary27", parameter: "rotary27" },
+    { id: "rotary28", parameter: "rotary28" },
+    { id: "rotary29", parameter: "rotary29" },
 ];
 
 const totalFrames = 50; // Anzahl der Frames im PNG-Strip
