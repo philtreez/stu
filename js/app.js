@@ -159,7 +159,7 @@ function setupRecButton() {
 
     if (recButton && recParam) {
         recButton.addEventListener("click", () => {
-            const newValue = playParam.value === 0 ? 1 : 0;
+            const newValue = recParam.value === 0 ? 1 : 0;
             recParam.value = newValue;
             console.log(`🎛️ Rec state set to: ${newValue}`);
         });
