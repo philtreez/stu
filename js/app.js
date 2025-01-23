@@ -634,4 +634,4 @@ setInterval(() => {
     if (device && context) {
         startWaveformVisualization(device, context);
     }
-}, 58);
+}, 429);
