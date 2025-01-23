@@ -597,7 +597,7 @@ async function startWaveformVisualization(device, context) {
         function draw() {
             const channelData = audioBuffer.getChannelData(0);
             const step = Math.ceil(channelData.length / canvas.width); // Schrittgröße pro Pixel
-            const amp = canvas.height / 2;
+            const amp = canvas.height / 1;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
@@ -633,4 +633,4 @@ setInterval(() => {
     if (device && context) {
         startWaveformVisualization(device, context);
     }
-}, 3432);
+}, 6864);
