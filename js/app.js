@@ -597,7 +597,7 @@ async function startWaveformVisualization(device, context) {
         function draw() {
             const channelData = audioBuffer.getChannelData(0);
             const step = Math.ceil(channelData.length / canvas.width); // Schrittgröße pro Pixel
-            const amp = canvas.height / 1;
+            const amp = canvas.height / 4;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
@@ -611,7 +611,7 @@ async function startWaveformVisualization(device, context) {
             }
 
             ctx.strokeStyle = "rgb(0, 255, 130)";
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1;
             ctx.stroke();
         }
 
