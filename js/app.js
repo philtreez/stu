@@ -59,6 +59,7 @@ async function createRNBODevice() {
         console.log("RNBO-Device erfolgreich erstellt.");
         console.log("🔍 RNBO Messages:", device.messages);
 
+        setInitialParameterValues(device);
         startWaveformVisualization(device, context); // 👈 Hier aufrufen!
         setupSequenceButtons();
         setupPlayButton();
@@ -167,6 +168,21 @@ function setupRecButton() {
     } else {
         console.error("❌ Play-Button oder Parameter nicht gefunden.");
     }
+}
+
+// ------ Playstat-Balken Steuerung ------
+const playstatParam = device.parametersById.get("playstat");
+const playstatBar = document.getElementById("playstat-bar");
+
+if (playstatParam && playstatBar) {
+    device.parameterChangeEvent.subscribe((param) => {
+        if (param.id === playstatParam.id) {
+            const value = param.value; // Wert des Parameters (zwischen 0.0 und 1.0)
+            const widthPercentage = value * 100; // Umwandeln in Prozent für die Breite
+            playstatBar.style.width = `${widthPercentage}%`; // Breite des Balkens setzen
+            console.log(`Playstat bar width set to: ${widthPercentage}%`);
+        }
+    });
 }
 
 
@@ -560,20 +576,7 @@ function sendSequenceToRNBO(seq) {
     console.log(`📡 Gesendete Sequenz an RNBO (${seq}):`, formattedSequence);
 }
 
-// ------ Playstat-Balken Steuerung ------
-const playstatParam = device.parametersById.get("playstat");
-const playstatBar = document.getElementById("playstat-bar");
 
-if (playstatParam && playstatBar) {
-    device.parameterChangeEvent.subscribe((param) => {
-        if (param.id === playstatParam.id) {
-            const value = param.value; // Wert des Parameters (zwischen 0.0 und 1.0)
-            const widthPercentage = value * 100; // Umwandeln in Prozent für die Breite
-            playstatBar.style.width = `${widthPercentage}%`; // Breite des Balkens setzen
-            console.log(`Playstat bar width set to: ${widthPercentage}%`);
-        }
-    });
-}
 
 async function loadRNBOScript(version) {
     return new Promise((resolve, reject) => {
