@@ -169,21 +169,16 @@ function setupRecButton() {
     }
 }
 
-// 🔹 Warten, bis `device` geladen ist
-async function waitForDevice() {
-    while (!device) {
-        console.warn("⏳ Warten auf RNBO-Device...");
-        await new Promise(resolve => setTimeout(resolve, 500));
-    }
-    console.log("✅ RNBO-Device geladen!");
-}
-
-// 🔹 Playstat-Balken initialisieren
 async function initializeUI() {
-    await waitForDevice(); // Stelle sicher, dass `device` bereit ist
+    await waitForDevice(); // Sicherstellen, dass `device` geladen ist
 
-    const playstatParam = device.parametersById.get("playstat");
+    console.log("✅ Initialisiere Playstat-Bar...");
+
+    const playstatParam = device?.parametersById?.get("playstat");
     const playstatBar = document.getElementById("playstat-bar");
+
+    console.log("🔍 Parameter playstat:", playstatParam);
+    console.log("🔍 Playstat-Bar gefunden:", playstatBar);
 
     if (!playstatParam) {
         console.error("❌ Parameter 'playstat' nicht gefunden.");
@@ -198,6 +193,8 @@ async function initializeUI() {
 
     // 🔹 Playstat-Änderungen verfolgen
     device.parameterChangeEvent.subscribe((param) => {
+        console.log(`🔄 Event erhalten: ${param.id} → ${param.value}`); // Debugging
+
         if (param.id === playstatParam.id) {
             const value = param.value; // Wert zwischen 0.0 und 1.0
             const widthPercentage = value * 100; // In Prozent umwandeln
@@ -206,6 +203,12 @@ async function initializeUI() {
         }
     });
 }
+
+// ⬇️ Stelle sicher, dass initializeUI erst nach `createRNBODevice()` ausgeführt wird!
+createRNBODevice().then(() => {
+    initializeUI();
+});
+
 
 
 const sliders = [
