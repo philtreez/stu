@@ -574,6 +574,54 @@ async function loadRNBOScript(version) {
     });
 }
 
+// Audio- und Analyser-Node verbinden
+const analyserNode = context.createAnalyser();
+analyserNode.fftSize = 2048; // Auflösung des Oszilloskops
+const bufferLength = analyserNode.frequencyBinCount;
+const dataArray = new Uint8Array(bufferLength);
+
+device.node.connect(analyserNode); // Verbinde Analyser mit Audio
+analyserNode.connect(outputNode);
+
+// Oszilloskop-Zeichnungsfunktion
+const oscilloscopeCanvas = document.getElementById('oscilloscope');
+oscilloscopeCanvas.width = oscilloscopeCanvas.offsetWidth;
+oscilloscopeCanvas.height = 110;
+const oscilloscopeContext = oscilloscopeCanvas.getContext("2d");
+
+function drawOscilloscope() {
+    requestAnimationFrame(drawOscilloscope);
+    analyserNode.getByteTimeDomainData(dataArray);
+
+    oscilloscopeContext.clearRect(0, 0, oscilloscopeCanvas.width, oscilloscopeCanvas.height);
+
+    oscilloscopeContext.lineWidth = 2;
+    oscilloscopeContext.strokeStyle = "white"; // Farbe der Wellenform
+    oscilloscopeContext.beginPath();
+
+    const sliceWidth = oscilloscopeCanvas.width / bufferLength;
+    let x = 0;
+
+    for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 256.0;
+        const y = (v * oscilloscopeCanvas.height) / 2;
+
+        if (i === 0) {
+            oscilloscopeContext.moveTo(x, y);
+        } else {
+            oscilloscopeContext.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+    }
+
+    oscilloscopeContext.lineTo(oscilloscopeCanvas.width, oscilloscopeCanvas.height / 2);
+    oscilloscopeContext.stroke();
+}
+
+drawOscilloscope(); // Zeichnen starten
+
+
 // Funktion zum Starten der Visualisierung
 async function startWaveformVisualization(device, context) {
     const bufferDescription = device.dataBufferDescriptions.find(desc => desc.id === "lulu");
