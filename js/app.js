@@ -170,17 +170,40 @@ function setupRecButton() {
     }
 }
 
-// ------ Playstat-Balken Steuerung ------
-const playstatParam = device.parametersById.get("playstat");
-const playstatBar = document.getElementById("playstat-bar");
+// 🔹 Warten, bis `device` geladen ist
+async function waitForDevice() {
+    while (!device) {
+        console.warn("⏳ Warten auf RNBO-Device...");
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    console.log("✅ RNBO-Device geladen!");
+}
 
-if (playstatParam && playstatBar) {
+// 🔹 Playstat-Balken initialisieren
+async function initializeUI() {
+    await waitForDevice(); // Stelle sicher, dass `device` bereit ist
+
+    const playstatParam = device.parametersById.get("playstat");
+    const playstatBar = document.getElementById("playstat-bar");
+
+    if (!playstatParam) {
+        console.error("❌ Parameter 'playstat' nicht gefunden.");
+        return;
+    }
+    if (!playstatBar) {
+        console.error("❌ Playstat-Bar-Element nicht gefunden.");
+        return;
+    }
+
+    console.log("🎛️ Playstat-Tracking gestartet!");
+
+    // 🔹 Playstat-Änderungen verfolgen
     device.parameterChangeEvent.subscribe((param) => {
         if (param.id === playstatParam.id) {
-            const value = param.value; // Wert des Parameters (zwischen 0.0 und 1.0)
-            const widthPercentage = value * 100; // Umwandeln in Prozent für die Breite
-            playstatBar.style.width = `${widthPercentage}%`; // Breite des Balkens setzen
-            console.log(`Playstat bar width set to: ${widthPercentage}%`);
+            const value = param.value; // Wert zwischen 0.0 und 1.0
+            const widthPercentage = value * 100; // In Prozent umwandeln
+            playstatBar.style.width = `${widthPercentage}%`; // Setzen der Breite
+            console.log(`📊 Playstat-Bar Breite gesetzt: ${widthPercentage}%`);
         }
     });
 }
