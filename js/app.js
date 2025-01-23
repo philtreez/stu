@@ -610,7 +610,7 @@ async function startWaveformVisualization(device, context) {
                 ctx.lineTo(i, amp + max * amp);
             }
 
-            ctx.strokeStyle = "r0g255b130";
+            ctx.strokeStyle = "rgb(0, 255, 130)";
             ctx.lineWidth = 2;
             ctx.stroke();
         }
