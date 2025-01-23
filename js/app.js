@@ -472,7 +472,7 @@ function updateStepVisualizations(step, step16, step16alt) {
     });
 
     document.querySelectorAll(".step16-extra3").forEach((element, index) => {
-        element.style.opacity = index === step16 ? "1" : "0";
+        element.style.opacity = index === step16alt ? "1" : "0";
     });
 }
 
