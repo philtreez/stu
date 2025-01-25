@@ -709,6 +709,28 @@ async function startWaveformVisualization(device, context) {
 // Setup-Funktion aufrufen
 setup();
 
+function setupSliderUpdatesOnLoad() {
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. Kann Slider nicht updaten.");
+        return;
+    }
+
+    console.log("🔄 Aktualisiere alle Slider beim Seitenladen...");
+
+    sliders.forEach(slider => {
+        const sliderDiv = document.getElementById(slider.id);
+        const param = device.parametersById.get(slider.parameter);
+
+        if (sliderDiv && param) {
+            console.log(`🎛️ Setze initialen Wert für ${slider.id}: ${param.value}`);
+            updateSliderPosition(sliderDiv, param.value);
+        } else {
+            console.error(`❌ Slider '${slider.id}' oder Parameter '${slider.parameter}' nicht gefunden.`);
+        }
+    });
+}
+
+
 // 🔄 **Regelmäßige Aktualisierung alle 1000ms (1 Sekunde)**
 setInterval(() => {
     if (device && context) {
