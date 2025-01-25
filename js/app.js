@@ -206,8 +206,11 @@ async function initializeUI() {
 }
 
 setup().then(() => {
-    initializeUI();
+    setupSliders(device).then(() => {
+        initializeUI();
+    });
 });
+
 
 
 
