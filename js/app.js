@@ -60,18 +60,39 @@ async function createRNBODevice() {
         console.log("🔍 RNBO Messages:", device.messages);
 
         startWaveformVisualization(device, context); // 👈 Hier aufrufen!
+        setupRNBOEventListener();
         setupSequenceButtons();
         setupPlayButton();
         setupRecButton();
         setupRndmButton();
         setupSliders(device);
         trackStepParameters(); // ✅ Stelle sicher, dass der richtige Name hier verwendet wird!
-        setupRNBOEventListener();
 
     } catch (error) {
         console.error("Fehler beim Erstellen des RNBO-Devices:", error);
     }
 }
+
+function setupRNBOEventListener() {
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. Event-Listener kann nicht registriert werden.");
+        return;
+    }
+
+    device.parameterChangeEvent.subscribe((param) => {
+        console.log(`🔄 Event von RNBO: ${param.id} → ${param.value}`); // <== DEBUG
+
+        // Falls es sich um einen Slider handelt, finde das zugehörige Element
+        const slider = sliders.find(s => s.parameter === param.id);
+        if (slider) {
+            const sliderDiv = document.getElementById(slider.id);
+            if (sliderDiv) {
+                updateSliderPosition(sliderDiv, param.value);
+            }
+        }
+    });
+}
+
 
 function setupSequenceButtons() {
     Object.keys(sequences).forEach((seq) => {
