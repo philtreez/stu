@@ -68,6 +68,7 @@ async function createRNBODevice() {
         setupPlayButton();
         setupRecButton();
         setupRndmButton();
+        setupUpButton();
         trackStepParameters(); // ✅ Stelle sicher, dass der richtige Name hier verwendet wird!
 
     } catch (error) {
@@ -148,7 +149,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// ------ up-Button Steuerung ------
+function setupUpButton() {
+    const upButton = document.getElementById("up");
 
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. Up-Button kann nicht gesetzt werden.");
+        return;
+    }
+
+    const upParam = device.parametersById.get("up");
+
+    if (upButton && upParam) {
+        upButton.addEventListener("click", () => {
+            const newValue = upParam.value === 0 ? 1 : 0;
+            upParam.value = newValue;
+            console.log(`🎛️ Up state set to: ${newValue}`);
+            
+            // 🔹 ERZWINGE UI-UPDATE FÜR ALLE SLIDER
+            sliders.forEach(slider => {
+                const sliderDiv = document.getElementById(slider.id);
+                const param = device.parametersById.get(slider.parameter);
+                if (sliderDiv && param) {
+                    updateSliderPosition(sliderDiv, param.value);
+                }
+            });
+        });
+    } else {
+        console.error("❌ Up-Button oder Parameter nicht gefunden.");
+    }
+}
 
 // ------ play-Button Steuerung ------
 function setupPlayButton() {
@@ -166,16 +196,7 @@ function setupPlayButton() {
             const newValue = playParam.value === 0 ? 1 : 0;
             playParam.value = newValue;
             console.log(`🎛️ Play state set to: ${newValue}`);
-            
-            // 🔹 ERZWINGE UI-UPDATE FÜR ALLE SLIDER
-            sliders.forEach(slider => {
-                const sliderDiv = document.getElementById(slider.id);
-                const param = device.parametersById.get(slider.parameter);
-                if (sliderDiv && param) {
-                    updateSliderPosition(sliderDiv, param.value);
-                }
             });
-        });
     } else {
         console.error("❌ Play-Button oder Parameter nicht gefunden.");
     }
