@@ -61,11 +61,12 @@ async function createRNBODevice() {
 
         startWaveformVisualization(device, context); // 👈 Hier aufrufen!
         setupRNBOEventListener();
+        setupSliders(device);
+        initializeUI();            // <== Falls UI-Elemente auch angepasst werden müssen.
         setupSequenceButtons();
         setupPlayButton();
         setupRecButton();
         setupRndmButton();
-        setupSliders(device);
         trackStepParameters(); // ✅ Stelle sicher, dass der richtige Name hier verwendet wird!
 
     } catch (error) {
@@ -331,8 +332,11 @@ async function setupSliders(rnboDevice) {
     });
 }
 
-// **Slider-Position basierend auf RNBO-Wert setzen**
 function updateSliderPosition(sliderDiv, value) {
+    if (!sliderDiv) return;
+    
+    console.log(`🔄 Aktualisiere Slider UI für ${sliderDiv.id}: ${value}`); // <== DEBUG
+
     const currentFrame = Math.floor(value * (totalFrames - 1));
     const frameOffset = currentFrame * sliderHeight;
     sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
