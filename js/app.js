@@ -166,6 +166,15 @@ function setupPlayButton() {
             const newValue = playParam.value === 0 ? 1 : 0;
             playParam.value = newValue;
             console.log(`🎛️ Play state set to: ${newValue}`);
+            
+            // 🔹 ERZWINGE UI-UPDATE FÜR ALLE SLIDER
+            sliders.forEach(slider => {
+                const sliderDiv = document.getElementById(slider.id);
+                const param = device.parametersById.get(slider.parameter);
+                if (sliderDiv && param) {
+                    updateSliderPosition(sliderDiv, param.value);
+                }
+            });
         });
     } else {
         console.error("❌ Play-Button oder Parameter nicht gefunden.");
