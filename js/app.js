@@ -238,23 +238,27 @@ async function setupSliders(rnboDevice) {
             return;
         }
 
-        // Slider-Styles setzen
+        // 🔹 Slider-Styles setzen
         sliderDiv.style.width = "200px";
         sliderDiv.style.height = `${sliderHeight}px`;
         sliderDiv.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')";
         sliderDiv.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
         sliderDiv.style.backgroundPositionY = "0px";
 
-        // **RNBO-Parameter-Änderungen überwachen**
+        // 🔹 RNBO-Parameter abrufen
         const param = device.parametersById.get(slider.parameter);
         if (param) {
+            // 🔹 Wenn der RNBO-Wert sich ändert, aktualisiere den Slider optisch
             param.onValueChange = (newValue) => {
-                currentValue = newValue;
+                console.log(`🎛️ RNBO-Parameter '${slider.parameter}' geändert: ${newValue}`);
                 updateSliderPosition(sliderDiv, newValue);
             };
+
+            // 🔹 Initialen Wert aus RNBO holen & Slider setzen
+            updateSliderPosition(sliderDiv, param.value);
         }
 
-        // **Maus-Interaktion**
+        // 🔹 Maus-Interaktion für manuelle Slider-Steuerung
         sliderDiv.addEventListener("mousedown", (event) => {
             isDragging = true;
             startX = event.clientX;
@@ -305,6 +309,7 @@ function updateRNBOParameter(parameter, value) {
         console.error(`❌ Parameter '${parameter}' nicht gefunden.`);
     }
 }
+
 
 /// 🔹 16 Rotary Sliders für seq6 und seq8 definieren
 const seq6Sliders = [];
