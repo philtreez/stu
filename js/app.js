@@ -193,12 +193,11 @@ function setupRecButton() {
     }
 }
 
-// ------ rndm-Button Steuerung ------
 function setupRndmButton() {
     const rndmButton = document.getElementById("rndm");
 
     if (!device) {
-        console.error("❌ RNBO-Device nicht geladen. rndm-Button kann nicht gesetzt werden.");
+        console.error("❌ RNBO-Device nicht geladen. Rndm-Button kann nicht gesetzt werden.");
         return;
     }
 
@@ -209,46 +208,23 @@ function setupRndmButton() {
             const newValue = rndmParam.value === 0 ? 1 : 0;
             rndmParam.value = newValue;
             console.log(`🎛️ Rndm state set to: ${newValue}`);
+
+            // 🔹 ERZWINGE UI-UPDATE FÜR ALLE SLIDER
+            sliders.forEach(slider => {
+                const sliderDiv = document.getElementById(slider.id);
+                const param = device.parametersById.get(slider.parameter);
+                if (sliderDiv && param) {
+                    updateSliderPosition(sliderDiv, param.value);
+                }
+            });
         });
     } else {
         console.error("❌ Rndm-Button oder Parameter nicht gefunden.");
     }
 }
 
-async function initializeUI() {
-    await waitForDevice(); // Sicherstellen, dass `device` geladen ist
 
-    console.log("✅ Initialisiere Playstat-Bar...");
 
-    const playstatParam = device?.parametersById?.get("playstat");
-    const playstatBar = document.getElementById("playstat-bar");
-
-    console.log("🔍 Parameter playstat:", playstatParam);
-    console.log("🔍 Playstat-Bar gefunden:", playstatBar);
-
-    if (!playstatParam) {
-        console.error("❌ Parameter 'playstat' nicht gefunden.");
-        return;
-    }
-    if (!playstatBar) {
-        console.error("❌ Playstat-Bar-Element nicht gefunden.");
-        return;
-    }
-
-    console.log("🎛️ Playstat-Tracking gestartet!");
-
-    // 🔹 Playstat-Änderungen verfolgen
-    device.parameterChangeEvent.subscribe((param) => {
-        console.log(`🔄 Event erhalten: ${param.id} → ${param.value}`); // Debugging
-
-        if (param.id === playstatParam.id) {
-            const value = param.value; // Wert zwischen 0.0 und 1.0
-            const widthPercentage = value * 100; // In Prozent umwandeln
-            playstatBar.style.width = `${widthPercentage}%`; // Setzen der Breite
-            console.log(`📊 Playstat-Bar Breite gesetzt: ${widthPercentage}%`);
-        }
-    });
-}
 
 setup().then(() => {
     setupSliders(device).then(() => {
@@ -358,6 +334,40 @@ function updateRNBOParameter(parameter, value) {
     }
 }
 
+async function initializeUI() {
+    await waitForDevice(); // Sicherstellen, dass `device` geladen ist
+
+    console.log("✅ Initialisiere Playstat-Bar...");
+
+    const playstatParam = device?.parametersById?.get("playstat");
+    const playstatBar = document.getElementById("playstat-bar");
+
+    console.log("🔍 Parameter playstat:", playstatParam);
+    console.log("🔍 Playstat-Bar gefunden:", playstatBar);
+
+    if (!playstatParam) {
+        console.error("❌ Parameter 'playstat' nicht gefunden.");
+        return;
+    }
+    if (!playstatBar) {
+        console.error("❌ Playstat-Bar-Element nicht gefunden.");
+        return;
+    }
+
+    console.log("🎛️ Playstat-Tracking gestartet!");
+
+    // 🔹 Playstat-Änderungen verfolgen
+    device.parameterChangeEvent.subscribe((param) => {
+        console.log(`🔄 Event erhalten: ${param.id} → ${param.value}`); // Debugging
+
+        if (param.id === playstatParam.id) {
+            const value = param.value; // Wert zwischen 0.0 und 1.0
+            const widthPercentage = value * 100; // In Prozent umwandeln
+            playstatBar.style.width = `${widthPercentage}%`; // Setzen der Breite
+            console.log(`📊 Playstat-Bar Breite gesetzt: ${widthPercentage}%`);
+        }
+    });
+}
 
 /// 🔹 16 Rotary Sliders für seq6 und seq8 definieren
 const seq6Sliders = [];
