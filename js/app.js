@@ -63,6 +63,7 @@ async function createRNBODevice() {
         setupSequenceButtons();
         setupPlayButton();
         setupRecButton();
+        setupRndmButton();
         setupSliders(device);
         trackStepParameters(); // ✅ Stelle sicher, dass der richtige Name hier verwendet wird!
         setupRNBOEventListener();
@@ -167,6 +168,28 @@ function setupRecButton() {
         });
     } else {
         console.error("❌ Play-Button oder Parameter nicht gefunden.");
+    }
+}
+
+// ------ rndm-Button Steuerung ------
+function setupRndmButton() {
+    const rndmButton = document.getElementById("rndm");
+
+    if (!device) {
+        console.error("❌ RNBO-Device nicht geladen. rndm-Button kann nicht gesetzt werden.");
+        return;
+    }
+
+    const rndmParam = device.parametersById.get("rndm");
+
+    if (rndmButton && rndmParam) {
+        rndmButton.addEventListener("click", () => {
+            const newValue = rndmParam.value === 0 ? 1 : 0;
+            rndmParam.value = newValue;
+            console.log(`🎛️ Rndm state set to: ${newValue}`);
+        });
+    } else {
+        console.error("❌ Rndm-Button oder Parameter nicht gefunden.");
     }
 }
 
