@@ -62,6 +62,7 @@ async function createRNBODevice() {
         startWaveformVisualization(device, context); // 👈 Hier aufrufen!
         setupRNBOEventListener();
         setupSliders(device);
+        setupSliderUpdatesOnLoad(); // 🔹 Hier nach `setupSliders(device);` aufrufen!
         initializeUI();            // <== Falls UI-Elemente auch angepasst werden müssen.
         setupSequenceButtons();
         setupPlayButton();
