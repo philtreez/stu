@@ -706,9 +706,6 @@ async function startWaveformVisualization(device, context) {
     }
 }
 
-// Setup-Funktion aufrufen
-setup();
-
 function setupSliderUpdatesOnLoad() {
     if (!device) {
         console.error("❌ RNBO-Device nicht geladen. Kann Slider nicht updaten.");
@@ -729,6 +726,9 @@ function setupSliderUpdatesOnLoad() {
         }
     });
 }
+
+// Setup-Funktion aufrufen
+setup();
 
 
 // 🔄 **Regelmäßige Aktualisierung alle 1000ms (1 Sekunde)**
