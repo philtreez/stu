@@ -63,6 +63,7 @@ async function createRNBODevice() {
         setupSequenceButtons();
         setupPlayButton();
         setupRecButton();
+        setupSliders(device);
         trackStepParameters(); // ✅ Stelle sicher, dass der richtige Name hier verwendet wird!
         setupRNBOEventListener();
 
@@ -204,119 +205,89 @@ async function initializeUI() {
     });
 }
 
-// ⬇️ Stelle sicher, dass initializeUI erst nach `createRNBODevice()` ausgeführt wird!
-createRNBODevice().then(() => {
+setup().then(() => {
     initializeUI();
 });
 
 
 
-const sliders = [
-    { id: "rotary1", parameter: "rotary1" },
-    { id: "rotary2", parameter: "rotary2" },
-    { id: "rotary3", parameter: "rotary3" }, // Weitere Slider hier hinzufügen
-    { id: "rotary4", parameter: "rotary4" },
-    { id: "rotary5", parameter: "rotary5" },
-    { id: "rotary6", parameter: "rotary6" },
-    { id: "rotary7", parameter: "rotary7" },
-    { id: "rotary8", parameter: "rotary8" },
-    { id: "rotary9", parameter: "rotary9" },
-    { id: "rotary10", parameter: "rotary10" },
-    { id: "rotary11", parameter: "rotary11" },
-    { id: "rotary12", parameter: "rotary12" },
-    { id: "rotary13", parameter: "rotary13" },
-    { id: "rotary14", parameter: "rotary14" },
-    { id: "rotary15", parameter: "rotary15" },
-    { id: "rotary16", parameter: "rotary16" },
-    { id: "rotary17", parameter: "rotary17" },
-    { id: "rotary18", parameter: "rotary18" },
-    { id: "rotary19", parameter: "rotary19" },
-    { id: "rotary20", parameter: "rotary20" },
-    { id: "rotary21", parameter: "rotary21" },
-    { id: "rotary22", parameter: "rotary22" },
-    { id: "rotary23", parameter: "rotary23" },
-    { id: "rotary24", parameter: "rotary24" },
-    { id: "rotary25", parameter: "rotary25" },
-    { id: "rotary26", parameter: "rotary26" },
-    { id: "rotary27", parameter: "rotary27" },
-    { id: "rotary28", parameter: "rotary28" },
-    { id: "rotary29", parameter: "rotary29" },
-    { id: "rotary30", parameter: "rotary30" },
-    { id: "rotary31", parameter: "rotary31" },
-    { id: "rotary32", parameter: "rotary32" },    
-    { id: "rotary33", parameter: "rotary33" },
-    { id: "rotary34", parameter: "rotary34" },
-    { id: "rotary35", parameter: "rotary35" },
-    { id: "rotary36", parameter: "rotary36" },
-    { id: "rotary37", parameter: "rotary37" },
-    { id: "rotary38", parameter: "rotary38" },
-    { id: "rotary39", parameter: "rotary39" },
-    { id: "rotary40", parameter: "rotary40" },
-    { id: "rotary41", parameter: "rotary41" },
-    { id: "rotary42", parameter: "rotary42" },
-    { id: "rotary43", parameter: "rotary43" },
-    { id: "rotary44", parameter: "rotary44" },
-];
+
+const sliders = Array.from({ length: 44 }, (_, i) => ({
+    id: `rotary${i + 1}`,
+    parameter: `rotary${i + 1}`
+}));
 
 const totalFrames = 50; // Anzahl der Frames im PNG-Strip
 const sliderHeight = 200; // Höhe eines Frames in px
 
-sliders.forEach((slider) => {
-    const sliderDiv = document.getElementById(slider.id);
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let currentValue = 0; // Wert des Parameters (0–1)
+async function setupSliders(rnboDevice) {
+    device = rnboDevice; // RNBO-Device speichern
 
-    if (!sliderDiv) {
-        console.error(`❌ Slider mit ID '${slider.id}' nicht gefunden.`);
-        return;
-    }
+    sliders.forEach((slider) => {
+        const sliderDiv = document.getElementById(slider.id);
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentValue = 0;
 
-    // Slider-Styles setzen
-    sliderDiv.style.width = "200px";
-    sliderDiv.style.height = `${sliderHeight}px`;
-    sliderDiv.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')"; // Pfad zum PNG-Strip
-    sliderDiv.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
-    sliderDiv.style.backgroundPositionY = "0px";
+        if (!sliderDiv) {
+            console.error(`❌ Slider mit ID '${slider.id}' nicht gefunden.`);
+            return;
+        }
 
-    // Maus-Interaktionen
-    sliderDiv.addEventListener("mousedown", (event) => {
-        isDragging = true;
-        startX = event.clientX;
-        startY = event.clientY;
+        // Slider-Styles setzen
+        sliderDiv.style.width = "200px";
+        sliderDiv.style.height = `${sliderHeight}px`;
+        sliderDiv.style.backgroundImage = "url('https://cdn.prod.website-files.com/678f73ac8b740d83e9294854/678fbf116dd6a225da9f66ec_slider_200_10000_50_pix.png')";
+        sliderDiv.style.backgroundSize = `200px ${sliderHeight * totalFrames}px`;
+        sliderDiv.style.backgroundPositionY = "0px";
+
+        // **RNBO-Parameter-Änderungen überwachen**
+        const param = device.parametersById.get(slider.parameter);
+        if (param) {
+            param.onValueChange = (newValue) => {
+                currentValue = newValue;
+                updateSliderPosition(sliderDiv, newValue);
+            };
+        }
+
+        // **Maus-Interaktion**
+        sliderDiv.addEventListener("mousedown", (event) => {
+            isDragging = true;
+            startX = event.clientX;
+            startY = event.clientY;
+        });
+
+        window.addEventListener("mousemove", (event) => {
+            if (!isDragging) return;
+
+            const deltaX = event.clientX - startX;
+            const deltaY = startY - event.clientY;
+            const deltaCombined = (deltaX + deltaY) / 2;
+            const stepChange = deltaCombined / 70;
+
+            currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1);
+            updateSliderPosition(sliderDiv, currentValue);
+            updateRNBOParameter(slider.parameter, currentValue);
+
+            startX = event.clientX;
+            startY = event.clientY;
+        });
+
+        window.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
     });
+}
 
-    window.addEventListener("mousemove", (event) => {
-        if (!isDragging) return;
+// **Slider-Position basierend auf RNBO-Wert setzen**
+function updateSliderPosition(sliderDiv, value) {
+    const currentFrame = Math.floor(value * (totalFrames - 1));
+    const frameOffset = currentFrame * sliderHeight;
+    sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
+}
 
-        const deltaX = event.clientX - startX; // Horizontal
-        const deltaY = startY - event.clientY; // Vertikal (umgekehrte Richtung)
-
-        // Kombinierte Bewegung in beide Richtungen
-        const deltaCombined = (deltaX + deltaY) / 2; // Gewichtung 50/50
-        const stepChange = deltaCombined / 70; // Empfindlichkeit (größer = langsamer)
-
-        currentValue = Math.min(Math.max(currentValue + stepChange, 0), 1); // Begrenzen auf 0–1
-
-        // Hintergrundposition im PNG-Strip aktualisieren
-        const currentFrame = Math.floor(currentValue * (totalFrames - 1)); // Wert in Frame umrechnen
-        const frameOffset = currentFrame * sliderHeight;
-        sliderDiv.style.backgroundPositionY = `-${frameOffset}px`;
-
-        // RNBO-Parameter aktualisieren
-        updateRNBOParameter(slider.parameter, currentValue);
-
-        // Startposition aktualisieren
-        startX = event.clientX;
-        startY = event.clientY;
-    });
-
-    window.addEventListener("mouseup", () => {
-        isDragging = false;
-    });
-});
-
+// **RNBO-Parameter aktualisieren**
 function updateRNBOParameter(parameter, value) {
     if (!device) {
         console.error(`❌ RNBO-Device nicht geladen. Parameter '${parameter}' kann nicht gesetzt werden.`);
